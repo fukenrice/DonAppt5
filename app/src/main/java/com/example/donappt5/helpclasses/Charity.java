@@ -7,16 +7,18 @@ public class Charity {
     public String fullDescription;
     public float trust;
     public int image;
+    public String photourl;
     public int id;
 
 
-    public Charity(String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid) {
+    public Charity(String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl) {
         name = gname;
         briefDescription = gbdesc;
         fullDescription = gfdesc;
         trust = gtrust;
         image = gim;
         id = gid;
+        photourl = gphotourl;
     }
     public Charity() {
         name = "defaultconstructor";

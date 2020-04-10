@@ -21,6 +21,7 @@ import com.example.donappt5.helpclasses.Charity;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
@@ -77,9 +78,18 @@ public class CharityActivity extends AppCompatActivity {
                                intent.getStringExtra("fdesc"),
                                intent.getFloatExtra ("trust", 0),
                                intent.getIntExtra   ("image", 0),
-                               intent.getIntExtra   ("id", -1));
+                               intent.getIntExtra   ("id", -1),
+                               intent.getStringExtra("url"));
         TextView tvName = (TextView) findViewById(R.id.tvName);
         ImageView ivImage = (ImageView) findViewById(R.id.ivImage);
+        if (descChar.photourl != null) {
+            ivImage.setImageResource(R.drawable.ic_sync);
+            //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+            Picasso.with(ctx).load(descChar.photourl).fit().into(ivImage);
+            //new DownloadImageTask(ivImage)
+            //        .execute("https://firebasestorage.googleapis.com/v0/b/donapp-d2378.appspot.com/o/images%2Fimage%3A96754?alt=media&token=3a4efe33-e1b1-43d7-94ec-7731105d5799");
+            //Log.d("urlnotnull", "setting image");
+        }
         //TextView tvDesc = (TextView) findViewById(R.id.tvFullDesc);
         TextView tvRating = (TextView) findViewById(R.id.tvTrustRating);
 
@@ -235,6 +245,8 @@ public class CharityActivity extends AppCompatActivity {
             bmImage.setImageBitmap(result);
         }
     }
+
+
 
 
     /*@Override

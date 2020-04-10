@@ -92,6 +92,7 @@ public class CharityCreationActivity extends AppCompatActivity {
     private GestureDetector gestureDetector;
 
     String pathtoimage;
+    String fileUrl;
 
     TextView tvNameCheck;
 
@@ -145,7 +146,6 @@ public class CharityCreationActivity extends AppCompatActivity {
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Flush();
             }
         });//*/
 
@@ -279,21 +279,21 @@ public class CharityCreationActivity extends AppCompatActivity {
         }
     }
 
+
     void createCharity() {
         Log.d("progresstracker", "createCharity");
-        Charity creatingChar = new Charity();
+        final Charity creatingChar = new Charity();
         creatingChar.name = etName.getText().toString();
         creatingChar.fullDescription = fragdesc.getText();
         creatingChar.briefDescription = creatingChar.fullDescription.substring(0, min(creatingChar.fullDescription.length(), 50));
         // Access a Cloud Firestore instance from your Activity
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Map<String, Object> charity = new HashMap<>();
+        final Map<String, Object> charity = new HashMap<>();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         charity.put("name", creatingChar.name);
         charity.put("description", creatingChar.fullDescription);
         charity.put("creatorid", user.getUid());
-        String fileUrl;
 
         if (pathtoimage != null) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -301,48 +301,44 @@ public class CharityCreationActivity extends AppCompatActivity {
 
             Uri file = loadedUri;//Uri.fromFile(new File(pathtoimage));
 
-            StorageReference imgsref = storageRef.child("images/"+file.getLastPathSegment());
+            StorageReference imgsref = storageRef.child("charities"+creatingChar.name+"/photo");
             UploadTask uploadTask = imgsref.putFile(file);
 
-            Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            storageRef.child("charities"+creatingChar.name+"/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
-                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                    if (!task.isSuccessful()) {
-                        throw task.getException();
-                    }
-
-                    // Continue with the task to get the download URL
-                    Log.d("urlgetter", storageRef.getDownloadUrl().toString());
-                    return storageRef.getDownloadUrl();
+                public void onSuccess(Uri uri) {
+                    // Got the download URL for 'users/me/profile.png'
+                    Log.d("urlgetter", uri.toString());
+                    fileUrl = uri.toString();
+                    charity.put("photourl", fileUrl);
+                    db.collection("charities").document(creatingChar.name)
+                            .set(charity);
                 }
-            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            }).addOnFailureListener(new OnFailureListener() {
                 @Override
-                public void onComplete(@NonNull Task<Uri> task) {
-                    if (task.isSuccessful()) {
-                        Uri downloadUri = task.getResult();
-                    } else {
-                        // Handle failures
-                        // ...
-                    }
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle any errors
                 }
             });
+            //Log.d("urlgetter", fileUrl);
+        } else {
+            db.collection("charities").document(creatingChar.name)
+                    .set(charity)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d("Charitycreationlog", "DocumentSnapshot successfully written!");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w("Charitycreationlog", "Error writing document", e);
+                        }
+                    });
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("charities/" + creatingChar.name);
         }
 
-        db.collection("charities").document(creatingChar.name)
-                .set(charity)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d("Charitycreationlog", "DocumentSnapshot successfully written!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("Charitycreationlog", "Error writing document", e);
-                    }
-                });
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("charities/" + creatingChar.name);
     }
 
     protected void onLocatorActivityResult(int requestCode, int resultCode, Intent data) {

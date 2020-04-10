@@ -115,7 +115,7 @@ public class CharityListActivity extends AppCompatActivity {
                                     int position, long id) {
                 Charity clickedCharity = charAdapter.getCharity(position);
                 Log.d("G", "itemClick: position = " + position + ", id = "
-                        + id + ", name = " + clickedCharity.name);
+                        + id + ", name = " + clickedCharity.name + "url = " + clickedCharity.photourl);
 
                 Intent intent = new Intent(ctx, CharityActivity.class);
                 intent.putExtra("chname", clickedCharity.name);
@@ -124,21 +124,13 @@ public class CharityListActivity extends AppCompatActivity {
                 intent.putExtra ("trust", clickedCharity.trust);
                 intent.putExtra   ("image", clickedCharity.image);
                 intent.putExtra   ("id", clickedCharity.id);
+                intent.putExtra   ("url", clickedCharity.photourl);
                 startActivity(intent);
             }
         });
 
         setupNavDrawer();
 
-    }
-
-    private void initFirestore() {
-        mFirestore = FirebaseFirestore.getInstance();
-
-        // Get the 50 highest rated restaurants
-        mQuery = mFirestore.collection("restaurants")
-                .orderBy("avgRating", Query.Direction.DESCENDING)
-                .limit(50);
     }
 
     void setupNavDrawer() {
@@ -219,8 +211,9 @@ public class CharityListActivity extends AppCompatActivity {
                                 Log.d("CharitylistLog", document.getId() + " => " + document.getData());
                                 String name = document.getString("name");
                                 String desc = document.getString("description");
-                                Log.d("CharitylistLog", "recieved: " + name + " " + desc);
-                                charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i));
+                                String url = document.getString("photourl");
+                                Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
+                                charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url));
                                 charAdapter.notifyDataSetChanged();
                                 i++;
                             }
@@ -244,8 +237,9 @@ public class CharityListActivity extends AppCompatActivity {
                                 Log.d("CharitylistLog", document.getId() + " => " + document.getData());
                                 String name = document.getString("name");
                                 String desc = document.getString("description");
-                                Log.d("CharitylistLog", "recieved: " + name + " " + desc);
-                                charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i));
+                                String url = document.getString("photourl");
+                                Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
+                                charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url));
                                 charAdapter.notifyDataSetChanged();
                                 i++;
                             }

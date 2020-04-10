@@ -1,6 +1,10 @@
 package com.example.donappt5;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +13,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.donappt5.helpclasses.Charity;
+import com.squareup.picasso.Picasso;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class CharityAdapter extends BaseAdapter {
@@ -58,9 +64,12 @@ public class CharityAdapter extends BaseAdapter {
         ((TextView) view.findViewById(R.id.tvDescr)).setText(c.briefDescription);
         ((TextView) view.findViewById(R.id.tvRating)).setText(String.valueOf(c.trust));
         ((TextView) view.findViewById(R.id.tvName)).setText(c.name);
-        ((ImageView) view.findViewById(R.id.ivImage)).setImageResource(c.image);
+        ImageView ivinad = view.findViewById(R.id.ivImage);
 
-
+        if (c.photourl != null) {
+            //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+            Picasso.with(ctx).load(c.photourl).fit().into(ivinad);
+        }
         // присваиваем чекбоксу обработчик
         // заполняем данными из товаров: в корзине или нет
         return view;
@@ -71,5 +80,28 @@ public class CharityAdapter extends BaseAdapter {
         return ((Charity) getItem(position));
     }
 
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
 
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
 }
