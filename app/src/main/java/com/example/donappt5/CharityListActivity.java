@@ -18,16 +18,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.donappt5.helpclasses.Charity;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
@@ -46,6 +51,7 @@ import static java.lang.Math.min;
 //import com.google.firebase.analytics.FirebaseAnalytics;
 //TODO in general: change support mail in firebase console settings AND project name
 public class CharityListActivity extends AppCompatActivity {
+    private int preLast;
     ArrayList<Charity> chars = new ArrayList<Charity>();
     CharityAdapter charAdapter;
     Context ctx;
@@ -101,12 +107,11 @@ public class CharityListActivity extends AppCompatActivity {
         lvMain.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-                fillData();
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
+                onMyScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
             }
         });
 
@@ -132,6 +137,8 @@ public class CharityListActivity extends AppCompatActivity {
         setupNavDrawer();
 
     }
+
+    String photourlfromstore;
 
     void setupNavDrawer() {
         drawerlayout = (DrawerLayout)findViewById(R.id.activity_charitylist);
@@ -177,15 +184,34 @@ public class CharityListActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         View header = navigationview.getHeaderView(0);
-        ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
+        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
         TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
 
-        if(user != null) {
-            if (user.getPhotoUrl() != null) {
-                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-                new CharityListActivity.DownloadImageTask(ivinHeader)
-                        .execute(user.getPhotoUrl().toString());
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final DocumentReference docRef = db.collection("users").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    photourlfromstore = document.getString("photourl");
+                    Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+                } else {
+                    Log.d("fuck", "get failed with ", task.getException());
+                }
             }
+        });
+
+
+        if(user != null) {
+
+            if (photourlfromstore != null) {
+                Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+            }
+            else { if (user.getPhotoUrl() != null) {
+                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+                Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
+            } }
             tvinHeader.setText(user.getDisplayName());
         }
     }
@@ -218,7 +244,7 @@ public class CharityListActivity extends AppCompatActivity {
                                 i++;
                             }
                         }
-                    });
+                    });//*/
         }
         else {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -250,6 +276,34 @@ public class CharityListActivity extends AppCompatActivity {
         //chars.add(new Charity(recievedCharities.elementAt(0).name, recievedCharities.elementAt(0).name, "wha?", -1, R.drawable.ic_launcher_foreground, -1));
     }
 
+
+    public void onMyScroll(AbsListView lw, final int firstVisibleItem,
+                         final int visibleItemCount, final int totalItemCount)
+    {
+
+        switch(lw.getId())
+        {
+            case R.id.lvMain:
+
+                // Make your calculation stuff here. You have all your
+                // needed info from the parameters of this function.
+
+                // Sample calculation to determine if the last
+                // item is fully visible.
+                final int lastItem = firstVisibleItem + visibleItemCount;
+
+                if(lastItem == totalItemCount)
+                {
+                    if(preLast!=lastItem)
+                    {
+                        //to avoid multiple calls for last item
+                        Log.d("Last", "Last");
+                        preLast = lastItem;
+                        fillData();
+                    }
+                }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -404,19 +404,6 @@ public class CharityCreationActivity extends AppCompatActivity {
             }
         });
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        View header = navigationview.getHeaderView(0);
-        ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
-        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
-
-        if(user != null) {
-            if (user.getPhotoUrl() != null) {
-                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-                new CharityCreationActivity.DownloadImageTask(ivinHeader)
-                        .execute(user.getPhotoUrl().toString());
-            }
-            tvinHeader.setText(user.getDisplayName());
-        }
     }
 
 

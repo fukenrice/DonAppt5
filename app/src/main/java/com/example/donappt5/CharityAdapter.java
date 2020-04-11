@@ -64,11 +64,13 @@ public class CharityAdapter extends BaseAdapter {
         ((TextView) view.findViewById(R.id.tvDescr)).setText(c.briefDescription);
         ((TextView) view.findViewById(R.id.tvRating)).setText(String.valueOf(c.trust));
         ((TextView) view.findViewById(R.id.tvName)).setText(c.name);
-        ImageView ivinad = view.findViewById(R.id.ivImage);
+        ((ImageView)(view.findViewById(R.id.ivImage))).setImageResource(R.drawable.ic_launcher_foreground);
+
+        //ImageView ivinad = view.findViewById(R.id.ivImage);
 
         if (c.photourl != null) {
             //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-            Picasso.with(ctx).load(c.photourl).fit().into(ivinad);
+            Picasso.with(ctx).load(c.photourl).fit().into((ImageView)(view.findViewById(R.id.ivImage)));
         }
         // присваиваем чекбоксу обработчик
         // заполняем данными из товаров: в корзине или нет
