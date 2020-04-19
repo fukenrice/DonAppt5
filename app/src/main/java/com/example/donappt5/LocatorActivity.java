@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -53,10 +54,11 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
         setContentView(R.layout.activity_locator);
         gotlongitude = 0;
         gotlatitude = 0;
-
+        Intent intent = getIntent();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
+        String extra;
         btnCancel = findViewById(R.id.btnSkip);
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +66,10 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
                 cordsNotGiven(v);
             }
         });
+        extra = intent.getStringExtra("btncancel");
+        if (extra != null) {
+            btnCancel.setText(extra);
+        }
         btnGiveGeo = findViewById(R.id.btnGiveGeo);
         btnGiveGeo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,6 +77,10 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
                 cordsGiven(v);
             }
         });
+        extra = intent.getStringExtra("btnaccept");
+        if (extra != null) {
+            btnGiveGeo.setText(extra);
+        }
         imgbtnCancel = findViewById(R.id.imgbtnCancel);
         imgbtnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,7 +88,11 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
                 cordsNotGiven(v);
             }
         });
-
+        TextView tvHeader = findViewById(R.id.tvMapHeader);
+        extra = intent.getStringExtra("headertext");
+        if (extra != null) {
+            tvHeader.setText(extra);
+        }
         mapView = findViewById(R.id.map_view);
 
         Bundle mapViewBundle = null;

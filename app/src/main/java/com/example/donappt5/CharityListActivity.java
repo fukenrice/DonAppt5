@@ -4,9 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,26 +20,41 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.donappt5.PopupActivities.ActivityConfirm;
 import com.example.donappt5.helpclasses.Charity;
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.core.GeoHash;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
+import org.imperiumlabs.geofirestore.GeoFirestore;
+
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -67,6 +85,9 @@ public class CharityListActivity extends AppCompatActivity {
     SwipeRefreshLayout pullToRefresh;
     DocumentSnapshot lastVisible;
     private int prelast;
+
+    double latitude = -1000;
+    double longitude = -1000;
 
     /** Called when the activity is first created. */
     public void onCreate(Bundle savedInstanceState) {
@@ -136,46 +157,44 @@ public class CharityListActivity extends AppCompatActivity {
 
         setupNavDrawer();
 
+        testUserHavingLocationsOfInterest();
     }
 
     String photourlfromstore;
 
     void setupNavDrawer() {
-        drawerlayout = (DrawerLayout)findViewById(R.id.activity_charitylist);
-        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
+        drawerlayout = (DrawerLayout) findViewById(R.id.activity_charitylist);
+        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout, R.string.Open, R.string.Close);
 
         drawerlayout.addDrawerListener(actionbartoggle);
         actionbartoggle.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        navigationview = (NavigationView)findViewById(R.id.nv);
+        navigationview = (NavigationView) findViewById(R.id.nv);
         navigationview.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
-                switch(id)
-                {
+                switch (id) {
                     case R.id.account:
-                        Toast.makeText(CharityListActivity.this, "My Account",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CharityListActivity.this, "My Account", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(ctx, ProfileActivity.class);
                         startActivity(intent);
                         break;
                     case R.id.settings:
-                        Toast.makeText(CharityListActivity.this, "Settings",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CharityListActivity.this, "Settings", Toast.LENGTH_SHORT).show();
                         Intent intent2 = new Intent(ctx, AuthenticationActivity.class);
                         startActivity(intent2);
                         break;
                     case R.id.create:
-                        Toast.makeText(CharityListActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CharityListActivity.this, "Create Charity", Toast.LENGTH_SHORT).show();
                         Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
                         startActivity(intent1);
                         break;
                     default:
                         return true;
                 }
-
-
                 return true;
 
             }
@@ -202,20 +221,18 @@ public class CharityListActivity extends AppCompatActivity {
             }
         });
 
-
-        if(user != null) {
-
+        if (user != null) {
             if (photourlfromstore != null) {
                 Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+            } else {
+                if (user.getPhotoUrl() != null) {
+                    //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+                    Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
+                }
             }
-            else { if (user.getPhotoUrl() != null) {
-                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-                Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
-            } }
             tvinHeader.setText(user.getDisplayName());
         }
     }
-
     // генерируем данные для адаптера
     void fillData() {
         if (lastVisible!= null) {
@@ -276,6 +293,63 @@ public class CharityListActivity extends AppCompatActivity {
         //chars.add(new Charity(recievedCharities.elementAt(0).name, recievedCharities.elementAt(0).name, "wha?", -1, R.drawable.ic_launcher_foreground, -1));
     }
 
+    void testUserHavingLocationsOfInterest() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users").document(user.getUid()).collection("locations")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            Log.d("locationsofinterest", "size : " + String.valueOf(task.getResult().size()));
+                            Log.d("locationsofinterest", "recievd : " + task.getResult());
+                            if (task.getResult().size() > 0) {
+                                for (DocumentSnapshot document : task.getResult()) {
+                                    //something
+                                }
+                            } else {
+                                Intent intent = new Intent(ctx, ActivityConfirm.class);
+
+                                intent.putExtra("CancelButtonTitle", "Cancel setting location");
+                                intent.putExtra("ConfirmButtonTitle", "Set location");
+                                intent.putExtra("PopupText", "You seem not to have locations of interest. \n" +
+                                        "Location of interest is a place, you are interested of hearing about, such as your local community, your city, your workplace or your district. \n" +
+                                        "When near a charity is registered near your location of interest, you will recieve a notification.\n" +
+                                        "We recommend setting a location of interest. You will be able to delete it or turn off notifications any time.");
+
+                                Display display = getWindowManager().getDefaultDisplay();
+                                Point size = new Point();
+                                display.getSize(size);
+                                intent.putExtra("width", (int)((double)(size.x) * 0.9));
+                                intent.putExtra("height", (int)((double)(size.y) * 0.7));
+
+                                startActivityForResult(intent, 3);
+                            }
+                        } else {
+                            Log.d("locationsofinterest", "Error getting documents: ", task.getException());
+
+                            Intent intent = new Intent(ctx, ActivityConfirm.class);
+
+                            intent.putExtra("CancelButtonTitle", "Cancel setting location");
+                            intent.putExtra("ConfirmButtonTitle", "Set location");
+                            intent.putExtra("PopupText", "You seem not to have locations of interest. \n" +
+                                    "Location of interest is a place, you are interested of hearing about, such as your local community, your city, your workplace or your district. \n" +
+                                    "When a charity is registered near your location of interest, you will recieve a notification.\n" +
+                                    "We recommend setting a location of interest. You will be able to delete it or turn off notifications any time.");
+
+                            Display display = getWindowManager().getDefaultDisplay();
+                            Point size = new Point();
+                            display.getSize(size);
+                            intent.putExtra("width", (int)((double)(size.x) * 0.9));
+                            intent.putExtra("height", (int)((double)(size.y) * 0.7));
+
+                            startActivityForResult(intent, 3);
+                        }
+                    }
+                });//*/
+    }
 
     public void onMyScroll(AbsListView lw, final int firstVisibleItem,
                          final int visibleItemCount, final int totalItemCount)
@@ -326,28 +400,68 @@ public class CharityListActivity extends AppCompatActivity {
         }    return super.onOptionsItemSelected(item);
     }
 
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data == null) {return;}
 
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
+        String resultingactivity = data.getStringExtra("resultingactivity");
+        Log.d("progresstracker", "resulted activity " + resultingactivity);
+        if (resultingactivity != null) {
+            if (resultingactivity.equals("LocatorActivity")) {
+                onLocatorActivityResult(requestCode, resultCode, data);
+            } else {
+                if (resultingactivity.equals("ActivityConfirm")) {
+                    String result = data.getStringExtra("result");
+                    if (result.equals("confirmed")) {
+                        Log.d("progresstracker", "confirmedresult");
+                        Intent intent = new Intent(ctx, LocatorActivity.class);
+                        intent.putExtra("headertext", "Set a location of interest. Hold on the marker and drag it.");
+                        intent.putExtra("btnaccept", "Here");
+                        intent.putExtra("btncancel", "Skip this step");
+                        startActivityForResult(intent, 3);
+                    }
+                }
             }
-            return mIcon11;
         }
+    }
 
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
+    protected void onLocatorActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data == null) {return;}
+
+        boolean coordsgiven = data.getBooleanExtra("locationgiven", false);
+        latitude = data.getDoubleExtra("latitude", -1000);
+        longitude = data.getDoubleExtra("longitude", -1000);
+
+        if (coordsgiven && (latitude > -900)) {
+            Toast.makeText(ctx, "lat: " + latitude + " long: " + longitude, Toast.LENGTH_LONG).show();
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            Map<String, Object> location = new HashMap<String, Object>();
+            location.put("latitude", latitude);
+            location.put("longitude", longitude);
+            location.put("geohash", "nullhash");
+            db.collection("users").document(user.getUid()).collection("locations").document("FirstLocation").set(location)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            CollectionReference colref = FirebaseFirestore.getInstance().collection("users").document(user.getUid()).collection("locations");
+                            GeoFirestore geoFirestore = new GeoFirestore(colref);
+                            geoFirestore.setLocation("FirstLocation", new GeoPoint(latitude, longitude), new GeoFirestore.CompletionCallback() {
+                                @Override
+                                public void onComplete(Exception e) {
+                                    Log.d("writinggeohash", "exception: " + e);
+                                }
+                            });
+                        }
+                    });
+
+        }
+        else {
+            Toast.makeText(ctx, "coordinates not given", Toast.LENGTH_SHORT).show();
         }
     }
 }

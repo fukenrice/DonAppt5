@@ -137,12 +137,12 @@ public class ProfileActivity extends AppCompatActivity {
 
             final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-            StorageReference imgsref = storageRef.child("users/"+user.getUid()+"/photo");
+            StorageReference imgsref = storageRef.child("users/" + user.getUid() + "/photo");
             UploadTask uploadTask = imgsref.putFile(file);
 
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            storageRef.child("users/"+user.getUid()+"/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            storageRef.child("users/" + user.getUid() + "/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
                 public void onSuccess(Uri uri) {
                     // Got the download URL for 'users/me/profile.png'
@@ -154,14 +154,11 @@ public class ProfileActivity extends AppCompatActivity {
                     db.collection("users")
                             .document(user.getUid())
                             .update(hmap);
-                    View header = navigationview.getHeaderView(0);
-                    ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
-                    Picasso.with(ctx).load(fileUrl).fit().into(ivinHeader);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Handle any errors
+                        // Handle any errors
                 }
             });
             //Log.d("urlgetter", fileUrl);
@@ -179,9 +176,10 @@ public class ProfileActivity extends AppCompatActivity {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
     }
 
+
     void setupNavDrawer() {
         drawerlayout = (DrawerLayout)findViewById(R.id.activity_layout_profile);
-        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout, R.string.Open, R.string.Close);
+        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
 
         drawerlayout.addDrawerListener(actionbartoggle);
         actionbartoggle.syncState();
@@ -196,32 +194,59 @@ public class ProfileActivity extends AppCompatActivity {
                 switch(id)
                 {
                     case R.id.account:
-                        Toast.makeText(ctx, "My Account",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileActivity.this, "My Account",Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(ctx, ProfileActivity.class);
                         startActivity(intent);
                         break;
                     case R.id.settings:
-                        Toast.makeText(ctx, "Settings",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileActivity.this, "Settings",Toast.LENGTH_SHORT).show();
                         Intent intent2 = new Intent(ctx, AuthenticationActivity.class);
                         startActivity(intent2);
                         break;
                     case R.id.create:
-                        Toast.makeText(ctx, "Create Charity",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
                         Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
                         startActivity(intent1);
                         break;
                     default:
                         return true;
                 }
-
-
                 return true;
 
             }
         });
+
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         View header = navigationview.getHeaderView(0);
+        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
+        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final DocumentReference docRef = db.collection("users").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    photourlfromstore = document.getString("photourl");
+                    Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+                } else {
+                    Log.d("fuck", "get failed with ", task.getException());
+                }
+            }
+        });
+
+        if(user != null) {
+            if (photourlfromstore != null) {
+                Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+            }
+            else { if (user.getPhotoUrl() != null) {
+                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+                Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
+            } }
+            tvinHeader.setText(user.getDisplayName());
+        }
     }
 
     @Override

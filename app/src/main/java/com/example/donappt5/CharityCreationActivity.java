@@ -53,6 +53,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -100,7 +101,8 @@ public class CharityCreationActivity extends AppCompatActivity {
     CharityCreateGoals fraggoal;
     View fragdescview;
     Button btnCreate;
-
+    double latitude = -1000;
+    double longitude = -1000;
     RelativeLayout layoutImage;
     Uri loadedUri;
     ImageView imgbtnCheckName;
@@ -131,6 +133,7 @@ public class CharityCreationActivity extends AppCompatActivity {
 
         pagerAdapter = new CharityCreationActivity.MyPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
+
         Log.d("ActivityTracker", "entered CharityCreationActivity2");
         pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
@@ -227,6 +230,9 @@ public class CharityCreationActivity extends AppCompatActivity {
         //GeoFire geoFire = new GeoFire(ref); //TODO geofire???
 
         Intent intent = new Intent(context, LocatorActivity.class);
+        intent.putExtra("headertext", "Give us location of your charity, although not mandatory, it will help raise awareness in your local community. Hold on the marker and drag it.");
+        intent.putExtra("btnaccept", "We are here");
+        intent.putExtra("btncancel", "Skip this step");
         startActivityForResult(intent, 1);
     }
 
@@ -279,7 +285,6 @@ public class CharityCreationActivity extends AppCompatActivity {
         }
     }
 
-
     void createCharity() {
         Log.d("progresstracker", "createCharity");
         final Charity creatingChar = new Charity();
@@ -294,7 +299,10 @@ public class CharityCreationActivity extends AppCompatActivity {
         charity.put("name", creatingChar.name);
         charity.put("description", creatingChar.fullDescription);
         charity.put("creatorid", user.getUid());
-
+        if (latitude > -990) {
+            charity.put("latitude", latitude);
+            charity.put("logitude", longitude);
+        }
         if (pathtoimage != null) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             final StorageReference storageRef = storage.getReference();
@@ -346,11 +354,11 @@ public class CharityCreationActivity extends AppCompatActivity {
         if (data == null) {return;}
 
         boolean coordsgiven = data.getBooleanExtra("locationgiven", false);
-        double latitiude = data.getDoubleExtra("latitude", 0);
-        double longitude = data.getDoubleExtra("longitude", 0);
+        latitude = data.getDoubleExtra("latitude", 0);
+        longitude = data.getDoubleExtra("longitude", 0);
 
         if (coordsgiven) {
-            Toast.makeText(context, "lat: " + latitiude + " long: " + longitude, Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "lat: " + latitude + " long: " + longitude, Toast.LENGTH_LONG).show();
         }
         else {
             Toast.makeText(context, "coordinates not given", Toast.LENGTH_SHORT).show();
@@ -369,42 +377,6 @@ public class CharityCreationActivity extends AppCompatActivity {
         startActivityForResult(intent, 2);
     }
 
-    void setupNavDrawer() {
-        drawerlayout = findViewById(R.id.activity_charitycreation);
-        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout, R.string.Open, R.string.Close);
-
-        drawerlayout.addDrawerListener(actionbartoggle);
-        actionbartoggle.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        navigationview = (NavigationView) findViewById(R.id.nv);
-        navigationview.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch (id) {
-                    case R.id.account:
-                        Toast.makeText(CharityCreationActivity.this, "My Account", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(context, ProfileActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.settings:
-                        Toast.makeText(CharityCreationActivity.this, "Settings", Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.create:
-                        Toast.makeText(CharityCreationActivity.this, "Charity Creation", Toast.LENGTH_SHORT).show();
-                        Intent intent1 = new Intent(context, CharityCreationActivity.class);
-                        startActivity(intent1);
-                        break;
-                    default:
-                        return true;
-                }
-                return true;
-            }
-        });
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    }
 
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
@@ -449,32 +421,6 @@ public class CharityCreationActivity extends AppCompatActivity {
                 return true;
         }    return super.onOptionsItemSelected(item);
     }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
-        }
-    }
-
 
     private void handlePermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -562,6 +508,80 @@ public class CharityCreationActivity extends AppCompatActivity {
         i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         context.startActivity(i);
+    }
+
+    String photourlfromstore;
+
+    void setupNavDrawer() {
+        drawerlayout = (DrawerLayout)findViewById(R.id.activity_charitycreation);
+        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
+
+        drawerlayout.addDrawerListener(actionbartoggle);
+        actionbartoggle.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        navigationview = (NavigationView)findViewById(R.id.nv);
+        navigationview.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                switch(id)
+                {
+                    case R.id.account:
+                        Toast.makeText(CharityCreationActivity.this, "My Account",Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(context, ProfileActivity.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.settings:
+                        Toast.makeText(CharityCreationActivity.this, "Settings",Toast.LENGTH_SHORT).show();
+                        Intent intent2 = new Intent(context, AuthenticationActivity.class);
+                        startActivity(intent2);
+                        break;
+                    case R.id.create:
+                        Toast.makeText(CharityCreationActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
+                        Intent intent1 = new Intent(context, CharityCreationActivity.class);
+                        startActivity(intent1);
+                        break;
+                    default:
+                        return true;
+                }
+                return true;
+
+            }
+        });
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        View header = navigationview.getHeaderView(0);
+        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
+        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final DocumentReference docRef = db.collection("users").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    photourlfromstore = document.getString("photourl");
+                    Picasso.with(context).load(photourlfromstore).fit().into(ivinHeader);
+                } else {
+                    Log.d("fuck", "get failed with ", task.getException());
+                }
+            }
+        });
+
+        if(user != null) {
+            if (photourlfromstore != null) {
+                Picasso.with(context).load(photourlfromstore).fit().into(ivinHeader);
+            }
+            else { if (user.getPhotoUrl() != null) {
+                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+                Picasso.with(context).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
+            } }
+            tvinHeader.setText(user.getDisplayName());
+        }
     }
 }
 

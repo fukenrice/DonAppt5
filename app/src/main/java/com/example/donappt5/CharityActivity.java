@@ -18,9 +18,14 @@ import android.widget.Toast;
 import com.example.donappt5.CharityDescriptionFragments.CharityDescFragment;
 import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.helpclasses.Charity;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
@@ -122,6 +127,8 @@ public class CharityActivity extends AppCompatActivity {
         setupNavDrawer();
     }
 
+    String photourlfromstore;
+
     void setupNavDrawer() {
         drawerlayout = (DrawerLayout)findViewById(R.id.activity_charitydesc);
         actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
@@ -145,23 +152,53 @@ public class CharityActivity extends AppCompatActivity {
                         break;
                     case R.id.settings:
                         Toast.makeText(CharityActivity.this, "Settings",Toast.LENGTH_SHORT).show();
+                        Intent intent2 = new Intent(ctx, AuthenticationActivity.class);
+                        startActivity(intent2);
                         break;
                     case R.id.create:
-                        Toast.makeText(CharityActivity.this, "Charity Creation",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CharityActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
                         Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
                         startActivity(intent1);
                         break;
                     default:
                         return true;
                 }
-
-
                 return true;
 
             }
         });
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        View header = navigationview.getHeaderView(0);
+        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
+        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final DocumentReference docRef = db.collection("users").document(user.getUid());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    photourlfromstore = document.getString("photourl");
+                    Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+                } else {
+                    Log.d("fuck", "get failed with ", task.getException());
+                }
+            }
+        });
+
+        if(user != null) {
+            if (photourlfromstore != null) {
+                Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+            }
+            else { if (user.getPhotoUrl() != null) {
+                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
+                Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
+            } }
+            tvinHeader.setText(user.getDisplayName());
+        }
     }
 
 
