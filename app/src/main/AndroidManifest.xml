@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.donappt5">
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.PERMISSION_ACCESS_COARSE_LOCATION"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CLOUD TO DEVICE MESSAGING" />
+    <uses-permission android:name="android.permission.PERMISSION_ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -19,20 +21,38 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".Services.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".Services.MyFirebaseInstanceIDService"
+            android:enabled="true"
+            android:exported="true" />
 
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id" tools:replace="android:value"/>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" />
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"
+            tools:replace="android:value" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".CharityListActivity"></activity>
-        <activity android:name=".CharityActivity"></activity>
-        <activity android:name=".ProfileActivity"></activity>
-        <activity android:name=".CharityCreationActivity"></activity>
-        <activity android:name=".LocatorActivity"></activity>
-        <activity android:name=".PopupActivities.ActivityConfirm"
-            android:theme="@style/AppTheme.PopUpWindowStyle"
-        ></activity>
+        <activity android:name=".CharityListActivity" />
+        <activity android:name=".CharityActivity" />
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".CharityCreationActivity" />
+        <activity android:name=".PopupActivities.LocatorActivity" />
+        <activity
+            android:name=".PopupActivities.ActivityConfirm"
+            android:theme="@style/AppTheme.PopUpWindowStyle" />
         <activity android:name=".AuthenticationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

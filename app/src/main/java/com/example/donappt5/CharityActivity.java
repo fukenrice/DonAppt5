@@ -152,7 +152,7 @@ public class CharityActivity extends AppCompatActivity {
                         break;
                     case R.id.settings:
                         Toast.makeText(CharityActivity.this, "Settings",Toast.LENGTH_SHORT).show();
-                        Intent intent2 = new Intent(ctx, AuthenticationActivity.class);
+                        Intent intent2 = new Intent(ctx, SettingsActivity.class);
                         startActivity(intent2);
                         break;
                     case R.id.create:

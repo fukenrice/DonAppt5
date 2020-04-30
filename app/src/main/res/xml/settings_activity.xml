@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="wifi"
+        android:summary="@string/wifi_summary"
+        android:title="@string/wifi_title"/>
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="hints"
+        android:summary="@string/hints_summary"
+        android:title="@string/hints_title"/>
+    <EditTextPreference
+        android:key="test_size"
+        android:title="Размер шрифта"
+        android:summary="Устанавливает новый размер шрифта"
+        android:defaultValue="14"
+        android:dialogTitle="Введите размер шрифта (от 10 до 32)" />
+</PreferenceScreen>

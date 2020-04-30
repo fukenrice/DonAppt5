@@ -8,11 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -35,9 +32,9 @@ import android.widget.Toast;
 import com.example.donappt5.CharityCreationFragments.CharityCreateDesc;
 import com.example.donappt5.CharityCreationFragments.CharityCreateGoals;
 import com.example.donappt5.PopupActivities.ActivityConfirm;
+import com.example.donappt5.PopupActivities.LocatorActivity;
 import com.example.donappt5.helpclasses.Charity;
 //import com.firebase.geofire.GeoFire;
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -47,19 +44,23 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.koalap.geofirestore.GeoFire;
+import com.koalap.geofirestore.GeoLocation;
+import com.koalap.geofirestore.GeoQuery;
+import com.koalap.geofirestore.GeoQueryEventListener;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -89,8 +90,9 @@ public class CharityCreationActivity extends AppCompatActivity {
     EditText etName;
     TextView tvState;
     private Toolbar mTopToolbar;
-    Charity descChar;
+    Charity creatingChar;
     private GestureDetector gestureDetector;
+
 
     String pathtoimage;
     String fileUrl;
@@ -228,6 +230,14 @@ public class CharityCreationActivity extends AppCompatActivity {
 
     void btnCreate() {
         //GeoFire geoFire = new GeoFire(ref); //TODO geofire???
+        if(etName.getText().toString().contains(" ")) {
+            Toast.makeText(context, "I am afraid your charity's name cannot contain space symbol", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if(etName.getText().toString().contains("/")) {
+            Toast.makeText(context, "I am afraid your charity's name cannot contain '/' symbol", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         Intent intent = new Intent(context, LocatorActivity.class);
         intent.putExtra("headertext", "Give us location of your charity, although not mandatory, it will help raise awareness in your local community. Hold on the marker and drag it.");
@@ -287,7 +297,7 @@ public class CharityCreationActivity extends AppCompatActivity {
 
     void createCharity() {
         Log.d("progresstracker", "createCharity");
-        final Charity creatingChar = new Charity();
+        creatingChar = new Charity();
         creatingChar.name = etName.getText().toString();
         creatingChar.fullDescription = fragdesc.getText();
         creatingChar.briefDescription = creatingChar.fullDescription.substring(0, min(creatingChar.fullDescription.length(), 50));
@@ -299,11 +309,10 @@ public class CharityCreationActivity extends AppCompatActivity {
         charity.put("name", creatingChar.name);
         charity.put("description", creatingChar.fullDescription);
         charity.put("creatorid", user.getUid());
-        if (latitude > -990) {
-            charity.put("latitude", latitude);
-            charity.put("logitude", longitude);
-        }
+
+        Log.d("storageprogresstracker", "-1");
         if (pathtoimage != null) {
+            Log.d("storageprogresstracker", "0");
             FirebaseStorage storage = FirebaseStorage.getInstance();
             final StorageReference storageRef = storage.getReference();
 
@@ -311,25 +320,43 @@ public class CharityCreationActivity extends AppCompatActivity {
 
             StorageReference imgsref = storageRef.child("charities"+creatingChar.name+"/photo");
             UploadTask uploadTask = imgsref.putFile(file);
-
-            storageRef.child("charities"+creatingChar.name+"/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                @Override
-                public void onSuccess(Uri uri) {
-                    // Got the download URL for 'users/me/profile.png'
-                    Log.d("urlgetter", uri.toString());
-                    fileUrl = uri.toString();
-                    charity.put("photourl", fileUrl);
-                    db.collection("charities").document(creatingChar.name)
-                            .set(charity);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
+            uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Handle any errors
+                    // Handle unsuccessful uploads
+                    Log.d("storageprogresstracker", "fuck" + exception);
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                    // ...
+                    Log.d("storageprogresstracker", "1");
+                    storageRef.child("charities"+creatingChar.name+"/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            // Got the download URL for 'users/me/profile.png'
+                            Log.d("urlgetter", uri.toString());
+                            fileUrl = uri.toString();
+                            charity.put("photourl", fileUrl);
+                            db.collection("charities").document(creatingChar.name)
+                                    .set(charity);
+                            putGeoQuery();
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle any errors
+                            Log.d("storageprogresstracker", "2" + exception);
+                        }
+                    });
                 }
             });
+
             //Log.d("urlgetter", fileUrl);
         } else {
+            Log.d("storageprogresstracker", "3");
             db.collection("charities").document(creatingChar.name)
                     .set(charity)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -345,8 +372,85 @@ public class CharityCreationActivity extends AppCompatActivity {
                         }
                     });
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("charities/" + creatingChar.name);
+            putGeoQuery();
         }
+    }
 
+    void putGeoQuery() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (latitude > -990) {
+            Map<String, Object> location = new HashMap<String, Object>();
+            location.put("latitude", latitude);
+            location.put("longitude", longitude);
+
+            Log.d("geoquery", "Am I even here?4");
+            //TODO: manage rules in console you stupid piece of shit, you real stupid piece of shit
+            db.collection("charities").document(creatingChar.name).collection("locations").document("FirstLocation").set(location)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d("geoquery", "Am I even here?3");
+                            CollectionReference colref = FirebaseFirestore.getInstance().collection("charities").document(creatingChar.name).collection("locations");
+                            GeoFire geoFirestore = new GeoFire(colref);
+                            geoFirestore.setLocation("FirstLocation", new GeoLocation(latitude, longitude));
+                            CollectionReference colref2 = FirebaseFirestore.getInstance().collection("charitylocations");
+                            GeoFire geoFirestore2 = new GeoFire(colref2);
+                            geoFirestore2.setLocation(creatingChar.name, new GeoLocation(latitude, longitude));
+
+                            Log.d("geoquery", "Am I even here?1");
+                            CollectionReference ref = FirebaseFirestore.getInstance().collection("userlocations");
+                            GeoFire geoFireuserlocation = new GeoFire(ref);
+                            GeoQuery geoQuery = geoFireuserlocation.queryAtLocation(new GeoLocation(latitude, longitude), 25);
+                            Log.d("geoquery", "Am I even here?2");
+                            geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+
+                                @Override
+                                public void onKeyEntered(String key, GeoLocation location) {
+                                    System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
+                                    Log.d("geoquery", "entereddoc:" + key);
+
+                                    HashMap<String, Object> notification = new HashMap<String, Object>();
+                                    notification.put("notificationMessage", creatingChar.name);
+                                    notification.put("notificationTitle", "new charity created nearby");
+
+                                    FirebaseFirestore.getInstance().collection("users")
+                                            .document(key).collection("Notifications")
+                                            .document(creatingChar.name).set(notification);
+
+                                }
+
+                                @Override
+                                public void onKeyExited(String key) {
+                                    System.out.println(String.format("Key %s is no longer in the search area", key));
+                                    Log.d("geoquery", "exiteddoc:" + key);
+
+                                    HashMap<String, Object> notification = new HashMap<String, Object>();
+                                    notification.put("notificationMessage", creatingChar.name);
+                                    notification.put("notificationTitle", "new charity created nearby");
+
+                                    FirebaseFirestore.getInstance().collection("users")
+                                            .document(key).collection("Notifications")
+                                            .document(creatingChar.name).set(notification);
+                                }
+
+                                @Override
+                                public void onKeyMoved(String key, GeoLocation location) {
+                                    Log.d("geoquery", "moveddoc:" + key);
+                                }
+
+                                @Override
+                                public void onGeoQueryReady() {
+                                    Log.d("geoquery", "ready");
+                                }
+
+                                @Override
+                                public void onGeoQueryError(Exception exception) {
+                                    Log.d("geoquery", "fuck:" + exception);
+                                }
+                            });
+                        }
+                    });
+        }
     }
 
     protected void onLocatorActivityResult(int requestCode, int resultCode, Intent data) {
@@ -418,6 +522,14 @@ public class CharityCreationActivity extends AppCompatActivity {
                 return true;      // manage other entries if you have it ...
             case R.id.action_search:
                 Toast.makeText(CharityCreationActivity.this, "Menu action clicked", Toast.LENGTH_LONG).show();
+
+                CollectionReference colref = FirebaseFirestore.getInstance().collection("userlocations");
+                GeoFire geoFirestore = new GeoFire(colref);
+                String creatingtest = "Doc" + new Random().nextInt();
+                DocumentReference docref = FirebaseFirestore.getInstance().collection("userlocations").document(creatingtest);
+                docref.set(new HashMap<String, Object>());
+                geoFirestore.setLocation(creatingtest, new GeoLocation(55.8800407, 36.5754417));
+                Log.d("geoquery", "setting" + creatingtest);
                 return true;
         }    return super.onOptionsItemSelected(item);
     }
@@ -535,7 +647,7 @@ public class CharityCreationActivity extends AppCompatActivity {
                         break;
                     case R.id.settings:
                         Toast.makeText(CharityCreationActivity.this, "Settings",Toast.LENGTH_SHORT).show();
-                        Intent intent2 = new Intent(context, AuthenticationActivity.class);
+                        Intent intent2 = new Intent(context, SettingsActivity.class);
                         startActivity(intent2);
                         break;
                     case R.id.create:

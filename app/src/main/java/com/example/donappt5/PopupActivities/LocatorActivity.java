@@ -1,4 +1,4 @@
-package com.example.donappt5;
+package com.example.donappt5.PopupActivities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.donappt5.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -118,6 +119,7 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
         intent.putExtra("resultingactivity", "LocatorActivity");
         intent.putExtra("latitude", mLocation.getPosition().latitude);
         intent.putExtra("longitude", mLocation.getPosition().longitude);
+        Log.d("resultingmarkerposition", mLocation.getPosition().latitude + " " + mLocation.getPosition().longitude);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -167,7 +169,6 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
                                     if (gmap != null) {
                                         gmap.moveCamera(CameraUpdateFactory.newLatLng(ny));
                                         mLocation.setPosition(ny);
-                                        mLocation.setDraggable(true);
                                     }
                                 }
                             }
@@ -243,13 +244,21 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
         LatLng ny = new LatLng(gotlatitude, gotlongitude);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(ny));
         mLocation = googleMap.addMarker(new MarkerOptions().position(ny).title("Marker"));
+        mLocation.setDraggable(true);
         gmap = googleMap;
+        gmap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng point) {
+                mLocation.setPosition(point);
+            }
+        });
         googleMap.setMinZoomPreference(5);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        getLastLocation();
         mapView.onResume();
     }
 

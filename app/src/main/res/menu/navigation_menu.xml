@@ -10,4 +10,12 @@
         android:id="@+id/create"
         android:icon="@drawable/ic_edit_24px"
         android:title="Create Your Charity" />
+    <item
+        android:id="@+id/list"
+        android:icon="@drawable/ic_edit_24px"
+        android:title="List of charities" />
+    <item
+        android:id="@+id/map"
+        android:icon="@drawable/ic_edit_24px"
+        android:title="Map of charities" />
 </menu>
