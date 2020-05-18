@@ -33,8 +33,10 @@ import com.example.donappt5.CharityCreationFragments.CharityCreateDesc;
 import com.example.donappt5.CharityCreationFragments.CharityCreateGoals;
 import com.example.donappt5.PopupActivities.ActivityConfirm;
 import com.example.donappt5.PopupActivities.LocatorActivity;
+import com.example.donappt5.PopupActivities.TagsActivity;
 import com.example.donappt5.helpclasses.Charity;
 //import com.firebase.geofire.GeoFire;
+import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -58,11 +60,15 @@ import com.koalap.geofirestore.GeoQueryEventListener;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.Vector;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -92,7 +98,8 @@ public class CharityCreationActivity extends AppCompatActivity {
     private Toolbar mTopToolbar;
     Charity creatingChar;
     private GestureDetector gestureDetector;
-
+    int cart = 0, ckids = 1, cpov = 2, csci = 3, cheal = 4, cedu = 5;
+    boolean ctags[];
 
     String pathtoimage;
     String fileUrl;
@@ -109,11 +116,16 @@ public class CharityCreationActivity extends AppCompatActivity {
     Uri loadedUri;
     ImageView imgbtnCheckName;
     ImageView imgChange;
+    MyGlobals myGlobals;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_charitycreation);
         context = this;
+        ctags = new boolean[6];
+        for (int i = 0; i < 6; i++) {
+            ctags[i] = false;
+        }
         Log.d("ActivityTracker", "entered CharityCreationActivity");
         etName = findViewById(R.id.etName);
         //TODO imageview
@@ -154,7 +166,9 @@ public class CharityCreationActivity extends AppCompatActivity {
             }
         });//*/
 
-        setupNavDrawer();
+        myGlobals = new MyGlobals(context);
+        myGlobals.setupNavDrawer(context, this, findViewById(R.id.activity_charitycreation));
+
         imgbtnCheckName = findViewById(R.id.imgbtnNameCheck);
         imgbtnCheckName.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,17 +244,17 @@ public class CharityCreationActivity extends AppCompatActivity {
 
     void btnCreate() {
         //GeoFire geoFire = new GeoFire(ref); //TODO geofire???
-        if(etName.getText().toString().contains(" ")) {
-            Toast.makeText(context, "I am afraid your charity's name cannot contain space symbol", Toast.LENGTH_LONG).show();
-            return;
-        }
+        //if(etName.getText().toString().contains(" ")) {
+        //    Toast.makeText(context, "I am afraid your charity's name cannot contain space symbol", Toast.LENGTH_LONG).show();
+        //    return;
+        //}
         if(etName.getText().toString().contains("/")) {
             Toast.makeText(context, "I am afraid your charity's name cannot contain '/' symbol", Toast.LENGTH_LONG).show();
             return;
         }
 
         Intent intent = new Intent(context, LocatorActivity.class);
-        intent.putExtra("headertext", "Give us location of your charity, although not mandatory, it will help raise awareness in your local community. Hold on the marker and drag it.");
+        intent.putExtra("headertext", "Give us location of your charity, although not mandatory, it will help raise awareness in your local community. Hold on the marker and it.");
         intent.putExtra("btnaccept", "We are here");
         intent.putExtra("btncancel", "Skip this step");
         startActivityForResult(intent, 1);
@@ -256,15 +270,16 @@ public class CharityCreationActivity extends AppCompatActivity {
         if (resultingactivity != null) {
             if (resultingactivity.equals("LocatorActivity")) {
                 onLocatorActivityResult(requestCode, resultCode, data);
-            } else {
-                if (resultingactivity.equals("ActivityConfirm")) {
+            } else if (resultingactivity.equals("ActivityConfirm")) {
                     String result = data.getStringExtra("result");
                     if (result.equals("confirmed")) {
                         Log.d("progresstracker", "confirmedresult");
                         createCharity();
                     }
-                }
+            } else if (resultingactivity.equals("TagsActivity")) {
+                onTagsActivityResult(requestCode, resultCode, data);
             }
+
         }
         else {
             new Thread(new Runnable() {
@@ -294,7 +309,6 @@ public class CharityCreationActivity extends AppCompatActivity {
             }).start();
         }
     }
-
     void createCharity() {
         Log.d("progresstracker", "createCharity");
         creatingChar = new Charity();
@@ -340,9 +354,13 @@ public class CharityCreationActivity extends AppCompatActivity {
                             fileUrl = uri.toString();
                             charity.put("photourl", fileUrl);
                             db.collection("charities").document(creatingChar.name)
-                                    .set(charity);
-                            putGeoQuery();
-
+                                    .set(charity).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    putGeoQuery();
+                                    putTags();
+                                }
+                            });
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -363,6 +381,8 @@ public class CharityCreationActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d("Charitycreationlog", "DocumentSnapshot successfully written!");
+                            putGeoQuery();
+                            putTags();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -371,9 +391,39 @@ public class CharityCreationActivity extends AppCompatActivity {
                             Log.w("Charitycreationlog", "Error writing document", e);
                         }
                     });
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("charities/" + creatingChar.name);
-            putGeoQuery();
         }
+    }
+
+    void putTags() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> namemap = new HashMap<String, Object>();
+        Map<String, Object> tagsmap = new HashMap<String, Object>();
+        if (ctags[cart]) {
+            db.collection("tags").document("art").collection("list").document(creatingChar.name).set(namemap);
+            tagsmap.put("art", true);
+        } else tagsmap.put("art", false);
+        if (ctags[cpov]) {
+            db.collection("tags").document("poverty").collection("list").document(creatingChar.name).set(namemap);
+            tagsmap.put("poverty", true);
+        } else tagsmap.put("poverty", false);
+        if (ctags[cedu]) {
+            db.collection("tags").document("education").collection("list").document(creatingChar.name).set(namemap);
+            tagsmap.put("education", true);
+        } else tagsmap.put("education", false);
+        if (ctags[csci]) {
+            db.collection("tags").document("science&research").collection("list").document(creatingChar.name).set(namemap);
+            tagsmap.put("science&research", true);
+        } else tagsmap.put("science&research", false);
+        if (ctags[ckids]) {
+            db.collection("tags").document("children").collection("list").document(creatingChar.name).set(namemap);
+            tagsmap.put("children", true);
+        } else tagsmap.put("children", false);
+        if (ctags[cheal]) {
+            db.collection("tags").document("healthcare").collection("list").document(creatingChar.name).set(namemap);
+            tagsmap.put("healthcare", true);
+        } else tagsmap.put("healthcare", false);
+
+        db.collection("charities").document(creatingChar.name).update(tagsmap);
     }
 
     void putGeoQuery() {
@@ -393,7 +443,10 @@ public class CharityCreationActivity extends AppCompatActivity {
                             CollectionReference colref = FirebaseFirestore.getInstance().collection("charities").document(creatingChar.name).collection("locations");
                             GeoFire geoFirestore = new GeoFire(colref);
                             geoFirestore.setLocation("FirstLocation", new GeoLocation(latitude, longitude));
+
                             CollectionReference colref2 = FirebaseFirestore.getInstance().collection("charitylocations");
+                            Map<String, Object> creatingdoc = new HashMap<>();
+                            colref2.document(creatingChar.name).set(creatingdoc);
                             GeoFire geoFirestore2 = new GeoFire(colref2);
                             geoFirestore2.setLocation(creatingChar.name, new GeoLocation(latitude, longitude));
 
@@ -453,20 +506,14 @@ public class CharityCreationActivity extends AppCompatActivity {
         }
     }
 
-    protected void onLocatorActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (data == null) {return;}
+    void onTagsActivityResult (int requestCode, int resultCode, Intent data) {
+        ctags[cart] = data.getBooleanExtra("art", false);
+        ctags[ckids] = data.getBooleanExtra("kids", false);
+        ctags[cpov] = data.getBooleanExtra("poverty", false);
+        ctags[csci] = data.getBooleanExtra("science&research", false);
+        ctags[cheal] = data.getBooleanExtra("healthcare", false);
+        ctags[cedu] = data.getBooleanExtra("education", false);
 
-        boolean coordsgiven = data.getBooleanExtra("locationgiven", false);
-        latitude = data.getDoubleExtra("latitude", 0);
-        longitude = data.getDoubleExtra("longitude", 0);
-
-        if (coordsgiven) {
-            Toast.makeText(context, "lat: " + latitude + " long: " + longitude, Toast.LENGTH_LONG).show();
-        }
-        else {
-            Toast.makeText(context, "coordinates not given", Toast.LENGTH_SHORT).show();
-        }
         Intent intent = new Intent(context, ActivityConfirm.class);
         intent.putExtra("CancelButtonTitle", "go back to charity creation");
         intent.putExtra("ConfirmButtonTitle", "confirm and create charity");
@@ -481,7 +528,24 @@ public class CharityCreationActivity extends AppCompatActivity {
         startActivityForResult(intent, 2);
     }
 
+    protected void onLocatorActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data == null) {return;}
 
+        boolean coordsgiven = data.getBooleanExtra("locationgiven", false);
+        latitude = data.getDoubleExtra("latitude", 0);
+        longitude = data.getDoubleExtra("longitude", 0);
+
+        if (coordsgiven) {
+            Toast.makeText(context, "lat: " + latitude + " long: " + longitude, Toast.LENGTH_LONG).show();
+        }
+        else {
+            Toast.makeText(context, "coordinates not given", Toast.LENGTH_SHORT).show();
+        }
+        Intent intent = new Intent(context, TagsActivity.class);
+
+        startActivityForResult(intent, 2);
+    }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
 
@@ -620,80 +684,6 @@ public class CharityCreationActivity extends AppCompatActivity {
         i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         context.startActivity(i);
-    }
-
-    String photourlfromstore;
-
-    void setupNavDrawer() {
-        drawerlayout = (DrawerLayout)findViewById(R.id.activity_charitycreation);
-        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
-
-        drawerlayout.addDrawerListener(actionbartoggle);
-        actionbartoggle.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        navigationview = (NavigationView)findViewById(R.id.nv);
-        navigationview.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch(id)
-                {
-                    case R.id.account:
-                        Toast.makeText(CharityCreationActivity.this, "My Account",Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(context, ProfileActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.settings:
-                        Toast.makeText(CharityCreationActivity.this, "Settings",Toast.LENGTH_SHORT).show();
-                        Intent intent2 = new Intent(context, SettingsActivity.class);
-                        startActivity(intent2);
-                        break;
-                    case R.id.create:
-                        Toast.makeText(CharityCreationActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
-                        Intent intent1 = new Intent(context, CharityCreationActivity.class);
-                        startActivity(intent1);
-                        break;
-                    default:
-                        return true;
-                }
-                return true;
-
-            }
-        });
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        View header = navigationview.getHeaderView(0);
-        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
-        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final DocumentReference docRef = db.collection("users").document(user.getUid());
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    photourlfromstore = document.getString("photourl");
-                    Picasso.with(context).load(photourlfromstore).fit().into(ivinHeader);
-                } else {
-                    Log.d("fuck", "get failed with ", task.getException());
-                }
-            }
-        });
-
-        if(user != null) {
-            if (photourlfromstore != null) {
-                Picasso.with(context).load(photourlfromstore).fit().into(ivinHeader);
-            }
-            else { if (user.getPhotoUrl() != null) {
-                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-                Picasso.with(context).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
-            } }
-            tvinHeader.setText(user.getDisplayName());
-        }
     }
 }
 

@@ -3,10 +3,7 @@ package com.example.donappt5;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -16,9 +13,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.donappt5.helpclasses.Friend;
+import com.example.donappt5.helpclasses.MyGlobals;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.login.LoginManager;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,8 +40,13 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -61,19 +70,28 @@ public class ProfileActivity extends AppCompatActivity {
     Button btnLoadProfile;
     String fileUrl;
     String photourlfromstore;
+    ListView lvFriends;
+    MyGlobals myGlobals;
+    FriendsAdapter friendsAdapter;
+    ArrayList<Friend> friends;
+    Button btnFavs;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_profile);
         ctx = this;
+        friends = new ArrayList<Friend>();
         mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(mTopToolbar);
 
-        setupNavDrawer();
+        myGlobals = new MyGlobals(ctx);
+        myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_layout_profile));
+
         btnLogOut = findViewById(R.id.btnLogOut);
         btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                LoginManager.getInstance().logOut();
                 AuthUI.getInstance()
                         .signOut(ctx)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -126,6 +144,72 @@ public class ProfileActivity extends AppCompatActivity {
                 uploadImage();
             }
         });
+        btnFavs = findViewById(R.id.btnFavs);
+        btnFavs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onFavsClick();
+            }
+        });
+//read_custom_friendlists
+        manageFriendsListView();
+    }
+
+
+
+    void onFavsClick() {
+        Intent intent = new Intent(ctx, CharityListActivity.class);
+        intent.putExtra("fillingfavorites", true);
+        startActivity(intent);
+    }
+
+    void manageFriendsListView() {
+        friendsAdapter = new FriendsAdapter(ctx, friends);
+        MyGlobals mg = new MyGlobals(ctx);
+        lvFriends = findViewById(R.id.lvFriends);
+        lvFriends.setAdapter(friendsAdapter);
+        //Log.d("friends", "from profile" + fl.toString());
+        getFriendsList();
+    }
+
+    public List<String> getFriendsList() {
+        final List<String> friendslist = new ArrayList<String>();
+        new GraphRequest(AccessToken.getCurrentAccessToken(), "/me/friends", null, HttpMethod.GET, new GraphRequest.Callback() {
+            public void onCompleted(GraphResponse response) {
+                /* handle the result */
+                Log.e("Friends List: 1", response.toString());
+                try {
+                    JSONObject responseObject = response.getJSONObject();
+                    JSONArray dataArray = responseObject.getJSONArray("data");
+                    Log.d("friendsprogress", dataArray.toString());
+
+                    for (int i = 0; i < dataArray.length(); i++) {
+                        JSONObject dataObject = dataArray.getJSONObject(i);
+                        Log.d("friendsprogress", dataObject.toString());
+                        String fbId = dataObject.getString("id");
+                        String fbName = dataObject.getString("name");
+                        Log.e("FbId", fbId);
+                        Log.e("FbName", fbName);
+                        String photourl = "http://graph.facebook.com/" + fbId + "/picture?type=square";
+                        Log.d("friend", "added: " + fbName + " " +  photourl);
+                        Friend lfriend = new Friend(fbId, fbName, photourl, null);
+                        Log.d("friend", "added: " + fbName + " " +  photourl);
+                        friendsAdapter.objects.add(lfriend);
+                        Log.d("friend", "added: " + fbName + " " +  photourl);
+                        friendsAdapter.notifyDataSetChanged();
+                        Log.d("friend", "added: " + fbName + " " +  photourl);
+                        friendslist.add(fbId);
+
+                    }
+                } catch (JSONException e) {
+                    Log.e("friendsexception", e.toString());
+                    e.printStackTrace();
+                } finally {
+                    Log.d("friendslist", "hideLoadingProgress();");
+                }
+            }
+        }).executeAsync();
+        return friendslist;
     }
 
     void uploadImage() {
@@ -139,28 +223,32 @@ public class ProfileActivity extends AppCompatActivity {
 
             StorageReference imgsref = storageRef.child("users/" + user.getUid() + "/photo");
             UploadTask uploadTask = imgsref.putFile(file);
-
-            final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            storageRef.child("users/" + user.getUid() + "/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public void onSuccess(Uri uri) {
-                    // Got the download URL for 'users/me/profile.png'
-                    Log.d("urlgetter", uri.toString());
-                    fileUrl = uri.toString();
-                    Map<String, Object> hmap = new HashMap<>();
-                    hmap.put("photourl", fileUrl);
-                    Log.d("puttingphoto", "url: " + fileUrl);
-                    db.collection("users")
-                            .document(user.getUid())
-                            .update(hmap);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                        // Handle any errors
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    storageRef.child("users/" + user.getUid() + "/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            // Got the download URL for 'users/me/profile.png'
+                            Log.d("urlgetter", uri.toString());
+                            fileUrl = uri.toString();
+                            Map<String, Object> hmap = new HashMap<>();
+                            hmap.put("photourl", fileUrl);
+                            Log.d("puttingphoto", "url: " + fileUrl);
+                            db.collection("users")
+                                    .document(user.getUid())
+                                    .update(hmap);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle any errors
+                        }
+                    });
                 }
             });
+
             //Log.d("urlgetter", fileUrl);
         }
     }
@@ -174,79 +262,6 @@ public class ProfileActivity extends AppCompatActivity {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE);
-    }
-
-
-    void setupNavDrawer() {
-        drawerlayout = (DrawerLayout)findViewById(R.id.activity_layout_profile);
-        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
-
-        drawerlayout.addDrawerListener(actionbartoggle);
-        actionbartoggle.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        navigationview = (NavigationView)findViewById(R.id.nv);
-        navigationview.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch(id)
-                {
-                    case R.id.account:
-                        Toast.makeText(ProfileActivity.this, "My Account",Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(ctx, ProfileActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.settings:
-                        Toast.makeText(ProfileActivity.this, "Settings",Toast.LENGTH_SHORT).show();
-                        Intent intent2 = new Intent(ctx, SettingsActivity.class);
-                        startActivity(intent2);
-                        break;
-                    case R.id.create:
-                        Toast.makeText(ProfileActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
-                        Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
-                        startActivity(intent1);
-                        break;
-                    default:
-                        return true;
-                }
-                return true;
-
-            }
-        });
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        View header = navigationview.getHeaderView(0);
-        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
-        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final DocumentReference docRef = db.collection("users").document(user.getUid());
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    photourlfromstore = document.getString("photourl");
-                    Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
-                } else {
-                    Log.d("fuck", "get failed with ", task.getException());
-                }
-            }
-        });
-
-        if(user != null) {
-            if (photourlfromstore != null) {
-                Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
-            }
-            else { if (user.getPhotoUrl() != null) {
-                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-                Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
-            } }
-            tvinHeader.setText(user.getDisplayName());
-        }
     }
 
     @Override

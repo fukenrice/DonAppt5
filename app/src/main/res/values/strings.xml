@@ -36,4 +36,6 @@
     <string name="wifi_summary">turn on/off WiFi</string>
     <string name="hints_title">Hints</string>
     <string name="hints_summary">Show hints</string>
+    <string name="title_activity_charitymap">Map</string>
+    <string name="search_hint">search hint</string>
 </resources>

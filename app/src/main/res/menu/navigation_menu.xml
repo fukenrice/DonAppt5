@@ -18,4 +18,8 @@
         android:id="@+id/map"
         android:icon="@drawable/ic_edit_24px"
         android:title="Map of charities" />
+    <item
+        android:id="@+id/browse"
+        android:icon="@drawable/ic_edit_24px"
+        android:title="Browse" />
 </menu>

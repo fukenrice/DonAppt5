@@ -34,21 +34,39 @@
             android:exported="true" />
 
         <activity
+            android:name=".BrowseActivity"
+            android:label="browse" />
+        <activity
+            android:name=".PopupActivities.TagsActivity"
+            android:label="tags" />
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
-
+        <activity
+            android:name=".CharitiesMapActivity"
+            android:label="@string/title_activity_charitymap" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"
             tools:replace="android:value" />
         <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".CharityListActivity" />
+        <activity android:name=".CharityListActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data android:name="android.app.searchable"
+                android:resource="@xml/searchable"/>
+        </activity>
         <activity android:name=".CharityActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".CharityCreationActivity" />
+
         <activity android:name=".PopupActivities.LocatorActivity" />
         <activity
             android:name=".PopupActivities.ActivityConfirm"

@@ -67,17 +67,28 @@
 
                     <Button
                         android:id="@+id/btnLoadProfile"
-                        android:layout_width="103dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="0dp"
                         android:text="Load progile image"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent" />
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <Button
+                        android:id="@+id/btnFavs"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Favorites"
+                        app:layout_constraintBottom_toTopOf="@+id/btnLoadProfile"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
+            <ListView
+                android:id="@+id/lvFriends"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="5" />

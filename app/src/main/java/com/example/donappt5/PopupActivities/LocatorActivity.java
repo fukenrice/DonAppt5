@@ -138,6 +138,7 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
         if (requestCode == PERMISSION_ID) {
             if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 // Granted. Start getting the location information
+                getLastLocation();
             }
         }
     }
@@ -246,6 +247,7 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
         mLocation = googleMap.addMarker(new MarkerOptions().position(ny).title("Marker"));
         mLocation.setDraggable(true);
         gmap = googleMap;
+        gmap.getUiSettings().setZoomControlsEnabled(true);
         gmap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng point) {

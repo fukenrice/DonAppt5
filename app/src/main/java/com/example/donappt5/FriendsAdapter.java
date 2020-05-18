@@ -14,17 +14,18 @@ import android.widget.TextView;
 
 import com.example.donappt5.R;
 import com.example.donappt5.helpclasses.Charity;
+import com.example.donappt5.helpclasses.Friend;
 import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class CharityAdapter extends BaseAdapter {
+public class FriendsAdapter extends BaseAdapter {
     Context ctx;
     LayoutInflater lInflater;
-    ArrayList<Charity> objects;
+    ArrayList<Friend> objects;
 
-    CharityAdapter(Context context, ArrayList<Charity> products) {
+    FriendsAdapter(Context context, ArrayList<Friend> products) {
         ctx = context;
         objects = products;
         lInflater = (LayoutInflater) ctx
@@ -34,6 +35,7 @@ public class CharityAdapter extends BaseAdapter {
     // кол-во элементов
     @Override
     public int getCount() {
+        if (objects == null) return 0;
         return objects.size();
     }
 
@@ -55,29 +57,51 @@ public class CharityAdapter extends BaseAdapter {
         // используем созданные, но не используемые view
         View view = convertView;
         if (view == null) {
-            view = lInflater.inflate(R.layout.item_charity, parent, false);
+            view = lInflater.inflate(R.layout.item_friend, parent, false);
         }
 
-        Charity c = getCharity(position);
+        Friend f = getFriend(position);
 
         // заполняем View в пункте списка данными из товаров: наименование, цена
         // и картинка
-        ((TextView) view.findViewById(R.id.tvDescr)).setText(c.briefDescription);
-        ((TextView) view.findViewById(R.id.tvRating)).setText(String.valueOf(c.trust));
-        ((TextView) view.findViewById(R.id.tvName)).setText(c.name);
-        ((ImageView)(view.findViewById(R.id.ivImage))).setImageResource(R.drawable.ic_launcher_foreground);
+        ((TextView) view.findViewById(R.id.tvName)).setText(f.name);
+        ((TextView) view.findViewById(R.id.tvChars)).setText("charsnotloaded");
+        ((ImageView)(view.findViewById(R.id.ivFriend))).setImageResource(R.drawable.ic_launcher_foreground);
 
         //ImageView ivinad = view.findViewById(R.id.ivImage);
 
-        if (c.photourl != null) {
+        if (f.photourl != null) {
             //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-            Picasso.with(ctx).load(c.photourl).fit().into((ImageView)(view.findViewById(R.id.ivImage)));
+            Picasso.with(ctx).load(f.photourl).fit().into((ImageView)(view.findViewById(R.id.ivFriend)));
+        }
+        if (f.chars != null) {
+            if (f.chars.size() != 0) {
+                String hs;
+                if (f.chars.size() == 1) {
+                    hs = "Creator of " + f.chars.get(0);
+                    ((TextView) view.findViewById(R.id.tvChars)).setText(hs);
+                }
+                else if (f.chars.size() == 2) {
+                    hs = "Creator of " + f.chars.get(0) + " and " + f.chars.get(1);
+                    ((TextView) view.findViewById(R.id.tvChars)).setText(hs);
+                }
+                else {
+                    hs = "Creator of " + f.chars.get(0) + ", " + f.chars.get(1) + " and " + String.valueOf(f.chars.size() - 2) + " more";
+                    ((TextView) view.findViewById(R.id.tvChars)).setText(hs);
+                }
+            } else {
+                String hs = "";
+                ((TextView) view.findViewById(R.id.tvChars)).setText(hs);
+            }
+            String hs = "";
+            ((TextView) view.findViewById(R.id.tvChars)).setText(hs);
         }
         return view;
     }
 
-    Charity getCharity(int position) {
-        return ((Charity) getItem(position));
+    // товар по позиции
+    Friend getFriend(int position) {
+        return ((Friend) getItem(position));
     }
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {

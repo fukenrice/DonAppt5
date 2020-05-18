@@ -5,19 +5,27 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.donappt5.R;
+import com.example.donappt5.helpclasses.Charity;
+import com.example.donappt5.helpclasses.MyClusterItem;
+import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -27,21 +35,41 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterManager;
+import com.koalap.geofirestore.GeoFire;
+import com.koalap.geofirestore.GeoLocation;
+import com.koalap.geofirestore.GeoQuery;
+import com.koalap.geofirestore.GeoQueryEventListener;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Vector;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
+
 public class CharitiesMapActivity extends AppCompatActivity implements OnMapReadyCallback {
+    private static final double EARTH_CIRCUMFERENCE_METERS = 40075000;
     Button btnCancel;
     Button btnGiveGeo;
-    double gotlongitude;
-    double gotlatitude;
     MapView mapView;
     private GoogleMap gmap;
     int PERMISSION_ID = 3575;
@@ -49,12 +77,20 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     private static final String MAP_VIEW_BUNDLE_KEY = "MapViewBundleKey";
     private Marker mLocation;
     ImageButton imgbtnCancel;
+    double latitude = -1000;
+    double longitude = -1000;
+    Vector<Marker> loadedmarkers;
+    GeoQuery geoQuery;
+    private ClusterManager<MyClusterItem> mClusterManager;
+    Context context;
+    HashSet<String> loadedchars;
+    MyGlobals myGlobals;
+    Toolbar mTopToolbar;
 
     public void onCreate(Bundle savedInstanceState) {
+        loadedchars = new HashSet<String>();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_charitiesmap);
-        gotlongitude = 0;
-        gotlatitude = 0;
         Intent intent = getIntent();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
@@ -65,14 +101,67 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(MAP_VIEW_BUNDLE_KEY);
         }
+
+        mapView = findViewById(R.id.map_view);
+
         mapView.onCreate(mapViewBundle);
         mapView.getMapAsync(this);
+        context = this;
 
-        drawCharities();
+        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(mTopToolbar);
+
+        myGlobals = new MyGlobals(context);
+        myGlobals.setupNavDrawer(context, this, findViewById(R.id.activity_charitiesmap));
     }
 
-    void drawCharities() {
+    void setQuery() {
+        CollectionReference ref = FirebaseFirestore.getInstance().collection("charitylocations");
+        GeoFire geoFireuserlocation = new GeoFire(ref);
+        geoQuery = geoFireuserlocation.queryAtLocation(new GeoLocation(latitude, longitude), 25);
 
+        Log.d("geoquery", "Am I even here?2");
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
+                Log.d("geoquery", "entereddoc:" + key);
+                //Marker newmarker = gmap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).title(key));;
+                //loadedmarkers.add(newmarker);
+                if (!loadedchars.contains(key)) {
+                    loadedchars.add(key);
+                    MyClusterItem offsetItem = new MyClusterItem(location.latitude, location.longitude, key, "snippet");
+                    mClusterManager.addItem(offsetItem);
+                }
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+                System.out.println(String.format("Key %s is no longer in the search area", key));
+                Log.d("geoquery", "exiteddoc:" + key);
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+                Log.d("geoquery", "moveddoc:" + key);
+                if (!loadedchars.contains(key)) {
+                    loadedchars.add(key);
+                    MyClusterItem offsetItem = new MyClusterItem(location.latitude, location.longitude, key, "snippet");
+                    mClusterManager.addItem(offsetItem);
+                }
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                Log.d("geoquery", "ready");
+            }
+
+            @Override
+            public void onGeoQueryError(Exception exception) {
+                Log.d("geoquery", "fuck:" + exception);
+            }
+        });
     }
 
     void cordsNotGiven(View v) {
@@ -135,12 +224,13 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
                                     //gmap.setMinZoomPreference(12);
                                     LatLng ny = new LatLng(location.getLatitude(), location.getLongitude());
                                     Log.d("LocatorActivityTracker", "getlastlocation: lat, long: " + location.getLatitude() + location.getLongitude());
-                                    gotlatitude = location.getLatitude();
-                                    gotlongitude = location.getLongitude();
+                                    latitude = location.getLatitude();
+                                    longitude = location.getLongitude();
                                     if (gmap != null) {
                                         gmap.moveCamera(CameraUpdateFactory.newLatLng(ny));
                                         mLocation.setPosition(ny);
                                     }
+                                    setQuery();
                                 }
                             }
                         }
@@ -190,8 +280,8 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
             LatLng ny = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
             Log.d("LocatorActivityTracker", "locationcallback: lat, long: " + mLastLocation.getLatitude() + mLastLocation.getLongitude());
             gmap.moveCamera(CameraUpdateFactory.newLatLng(ny));
-            gotlatitude = mLastLocation.getLatitude();
-            gotlongitude = mLastLocation.getLongitude();
+            latitude = mLastLocation.getLatitude();
+            longitude = mLastLocation.getLongitude();
         }
     };
 
@@ -208,22 +298,83 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         mapView.onSaveInstanceState(mapViewBundle);
     }
 
+    Charity clickedCharity;
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
         googleMap.setMinZoomPreference(5);
-        LatLng ny = new LatLng(gotlatitude, gotlongitude);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(ny));
+        LatLng ny = new LatLng(latitude, longitude);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ny, 10));
         mLocation = googleMap.addMarker(new MarkerOptions().position(ny).title("Marker"));
-        mLocation.setDraggable(true);
+        mLocation.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+        mLocation.setZIndex(1000);
+        //mLocation.set
         gmap = googleMap;
-        gmap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        googleMap.setMinZoomPreference(5);
+        gmap.getUiSettings().setZoomControlsEnabled(true);
+        gmap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
-            public void onMapClick(LatLng point) {
-                mLocation.setPosition(point);
+            public void onCameraMove() {
+                LatLng latLng = gmap.getCameraPosition().target;
+                double metersPerPx = 1/getPixelsPerMeter(latLng.latitude, gmap.getCameraPosition().zoom);
+                LinearLayout wtflayout = findViewById(R.id.wtflayout);
+                double width = wtflayout.getWidth();
+                double height = wtflayout.getHeight();
+
+                geoQuery.setLocation(new GeoLocation(latLng.latitude, latLng.longitude),
+                        sqrt(width*width + height*height) * metersPerPx/1000);
+                //drawCircle(new LatLng(latitude, longitude), width/2 * metersPerPx);
             }
         });
-        googleMap.setMinZoomPreference(5);
+
+        mClusterManager = new ClusterManager<MyClusterItem>(this, gmap);
+        gmap.setOnCameraIdleListener(mClusterManager);
+        gmap.setOnMarkerClickListener(mClusterManager);
+        //mClusterManager.setAnimation(true);
+        mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<MyClusterItem>() {
+            @Override
+            public void onClusterItemInfoWindowClick(MyClusterItem item) {
+                String name = item.getTitle();
+
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                DocumentReference docRef = db.collection("charities").document(item.getTitle());
+                docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                clickedCharity = new Charity();
+                                Log.d("Reading", "DocumentSnapshot data: " + document.getData());
+                                clickedCharity.name = item.getTitle();
+                                clickedCharity.fullDescription = (String)document.get("description");
+                                clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
+                                clickedCharity.photourl = (String)document.get("photourl");
+
+                                Intent intent = new Intent(context, CharityActivity.class);
+                                intent.putExtra("chname", clickedCharity.name);
+                                intent.putExtra("bdesc", clickedCharity.briefDescription);
+                                intent.putExtra("fdesc", clickedCharity.fullDescription);
+                                intent.putExtra   ("url", clickedCharity.photourl);
+                                startActivity(intent);
+
+                            } else {
+                                Log.d("Reading", "No such document");
+                            }
+                        } else {
+                            Log.d("Reading", "get failed with ", task.getException());
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public double getPixelsPerMeter(double lat, double zoom) {
+        double pixelsPerTile = 256 * ((double)context.getResources().getDisplayMetrics().densityDpi / 160);
+        double numTiles = Math.pow(2,zoom);
+        double metersPerTile = Math.cos(Math.toRadians(lat)) * EARTH_CIRCUMFERENCE_METERS / numTiles;
+        return pixelsPerTile / metersPerTile;
     }
 
     @Override
@@ -258,5 +409,22 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     public void onLowMemory() {
         super.onLowMemory();
         mapView.onLowMemory();
+    }
+
+    private void drawCircle(LatLng point, double rad){
+        // Instantiating CircleOptions to draw a circle around the marker
+        CircleOptions circleOptions = new CircleOptions();
+        // Specifying the center of the circle
+        circleOptions.center(point);
+        // Radius of the circle
+        circleOptions.radius(rad);
+        // Border color of the circle
+        circleOptions.strokeColor(Color.BLACK);
+        // Fill color of the circle
+        circleOptions.fillColor(0x30ff0000);
+        // Border width of the circle
+        circleOptions.strokeWidth(2);
+        // Adding the circle to the GoogleMap
+        gmap.addCircle(circleOptions);
     }
 }

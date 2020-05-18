@@ -16,20 +16,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.donappt5.CharityDescriptionFragments.CharityDescFragment;
+import com.example.donappt5.CharityDescriptionFragments.CharityForumFragment;
 import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.helpclasses.Charity;
+import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.koalap.geofirestore.GeoFire;
+import com.koalap.geofirestore.GeoLocation;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
+import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -48,12 +55,13 @@ public class CharityActivity extends AppCompatActivity {
     Context ctx;
 
     private GestureDetector gestureDetector;
-
+    boolean addedtofavs = false;
     CharityDescFragment fragdesc;
     CharityGoalsFragment fraggoal;
+    CharityForumFragment fragforum;
     float lastX;
     static final int PAGE_COUNT = 10;
-
+    ImageView ivFavorite;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -64,12 +72,13 @@ public class CharityActivity extends AppCompatActivity {
     private DrawerLayout drawerlayout;
     private ActionBarDrawerToggle actionbartoggle;
     private NavigationView navigationview;
+    MyGlobals myGlobals;
 
     public void onCreate (Bundle savedInstanceState) {
         ctx = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_charitydesc);
-        Log.i("ActivityTrack", "entered carityactivity");
+        Log.i("ActivityTrack", "entered charityactivity");
         Intent intent = getIntent();
 
         mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -77,6 +86,7 @@ public class CharityActivity extends AppCompatActivity {
 
         fragdesc = new CharityDescFragment();
         fraggoal = new CharityGoalsFragment();
+        fragforum = new CharityForumFragment();
 
         descChar = new Charity(intent.getStringExtra("chname"),
                                intent.getStringExtra("bdesc"),
@@ -124,83 +134,61 @@ public class CharityActivity extends AppCompatActivity {
             }
         });//*/
 
-        setupNavDrawer();
-    }
-
-    String photourlfromstore;
-
-    void setupNavDrawer() {
-        drawerlayout = (DrawerLayout)findViewById(R.id.activity_charitydesc);
-        actionbartoggle = new ActionBarDrawerToggle(this, drawerlayout,R.string.Open, R.string.Close);
-
-        drawerlayout.addDrawerListener(actionbartoggle);
-        actionbartoggle.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        navigationview = (NavigationView)findViewById(R.id.nv);
-        navigationview.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        myGlobals = new MyGlobals(ctx);
+        myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_charitydesc));
+        loadFavs();
+        ivFavorite = findViewById(R.id.ivFavorite);
+        ivFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                switch(id)
-                {
-                    case R.id.account:
-                        Toast.makeText(CharityActivity.this, "My Account",Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(ctx, ProfileActivity.class);
-                        startActivity(intent);
-                        break;
-                    case R.id.settings:
-                        Toast.makeText(CharityActivity.this, "Settings",Toast.LENGTH_SHORT).show();
-                        Intent intent2 = new Intent(ctx, SettingsActivity.class);
-                        startActivity(intent2);
-                        break;
-                    case R.id.create:
-                        Toast.makeText(CharityActivity.this, "Create Charity",Toast.LENGTH_SHORT).show();
-                        Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
-                        startActivity(intent1);
-                        break;
-                    default:
-                        return true;
-                }
-                return true;
-
+            public void onClick(View v) {
+                onFavoriteClick();
             }
         });
+    }
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        View header = navigationview.getHeaderView(0);
-        final ImageView ivinHeader = header.findViewById(R.id.nav_header_imageView);
-        TextView tvinHeader = header.findViewById(R.id.nav_header_textView);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final DocumentReference docRef = db.collection("users").document(user.getUid());
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+    void loadFavs() {
+        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DocumentReference docIdRef = rootRef.collection("users").document(user.getUid()).collection("favorites").document(descChar.name);
+        docIdRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
-                    photourlfromstore = document.getString("photourl");
-                    Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
+                    if (document.exists()) {
+                        addedtofavs = true;
+                        ivFavorite.setImageResource(R.drawable.ic_favorite_on);
+                    } else {
+                        addedtofavs = false;
+                        ivFavorite.setImageResource(R.drawable.ic_favorite_off);
+                    }
                 } else {
-                    Log.d("fuck", "get failed with ", task.getException());
+                    Log.d("namechecker", "Failed with: ", task.getException());
                 }
             }
         });
 
-        if(user != null) {
-            if (photourlfromstore != null) {
-                Picasso.with(ctx).load(photourlfromstore).fit().into(ivinHeader);
-            }
-            else { if (user.getPhotoUrl() != null) {
-                //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
-                Picasso.with(ctx).load(user.getPhotoUrl().toString()).fit().into(ivinHeader);
-            } }
-            tvinHeader.setText(user.getDisplayName());
-        }
     }
 
+    void onFavoriteClick() {
+        if (addedtofavs) {
+            addedtofavs = false;
+            ivFavorite.setImageResource(R.drawable.ic_favorite_off);
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+             db.collection("users").document(user.getUid()).collection("favorites").document(descChar.name).delete();
+        } else {
+            addedtofavs = true;
+            ivFavorite.setImageResource(R.drawable.ic_favorite_on);
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+            HashMap<String, Object> namemap = new HashMap<String, Object>();
+            namemap.put("name", descChar.name);
+            namemap.put("description", descChar.fullDescription);
+            namemap.put("photourl", descChar.photourl);
+            db.collection("users").document(user.getUid()).collection("favorites").document(descChar.name).set(namemap);
+        }
+    }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
 
@@ -211,16 +199,16 @@ public class CharityActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int pos) {
             switch(pos) {
-
                 case 0: return CharityDescFragment.newInstance(descChar);
                 case 1: return CharityGoalsFragment.newInstance(descChar);
-                default: return CharityDescFragment.newInstance(descChar);
+                case 2: return CharityForumFragment.newInstance(descChar);
+                default: return CharityForumFragment.newInstance(descChar);
             }
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
     }
 
