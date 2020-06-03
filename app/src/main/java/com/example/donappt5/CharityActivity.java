@@ -11,6 +11,7 @@ import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +20,7 @@ import com.example.donappt5.CharityDescriptionFragments.CharityDescFragment;
 import com.example.donappt5.CharityDescriptionFragments.CharityForumFragment;
 import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.helpclasses.Charity;
+import com.example.donappt5.helpclasses.CheckoutActivity;
 import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -73,6 +75,7 @@ public class CharityActivity extends AppCompatActivity {
     private ActionBarDrawerToggle actionbartoggle;
     private NavigationView navigationview;
     MyGlobals myGlobals;
+    Button btnDonate;
 
     public void onCreate (Bundle savedInstanceState) {
         ctx = this;
@@ -87,7 +90,15 @@ public class CharityActivity extends AppCompatActivity {
         fragdesc = new CharityDescFragment();
         fraggoal = new CharityGoalsFragment();
         fragforum = new CharityForumFragment();
+        btnDonate = findViewById(R.id.DonateButton);
+        btnDonate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent1 = new Intent(ctx, CheckoutActivity.class);
+                startActivity(intent1);
 
+            }
+        });
         descChar = new Charity(intent.getStringExtra("chname"),
                                intent.getStringExtra("bdesc"),
                                intent.getStringExtra("fdesc"),

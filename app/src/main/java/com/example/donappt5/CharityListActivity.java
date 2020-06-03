@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -46,7 +47,10 @@ import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
 import com.koalap.geofirestore.GeoQueryEventListener;
 //import com.squareup.picasso.Picasso;
-
+import com.stripe.Stripe;
+import com.stripe.android.PaymentConfiguration;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -103,6 +108,11 @@ public class CharityListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_charitylist);
         ctx = this;
+
+        PaymentConfiguration.init(
+                getApplicationContext(),
+                "pk_test_GSMF14GK1NPKphtwTYRYl60W0083LGv2jw"
+        );
 
         setupGooglePay();
         handleIntent(getIntent());
@@ -196,6 +206,53 @@ public class CharityListActivity extends AppCompatActivity {
                         db.collection("users").document(user.getUid()).update(device_token);
                     }
                 });
+        MyTask mt = new MyTask();
+        mt.execute();
+    }
+
+    class MyTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Log.d("AsyncTask", "Begin");
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            testStripe();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            Log.d("AsyncTask", "End");
+        }
+    }
+
+
+    void testStripe() {
+        Stripe.apiKey = "sk_test_GNf5grKS0aC07sxFk6Yg2sED00sjKdHRoT";
+
+        Log.d("stripe", Stripe.apiKey);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("amount", 1000);
+        params.put("currency", "usd");
+        ArrayList paymentMethodTypes = new ArrayList();
+        paymentMethodTypes.add("card");
+        Log.d("stripe", "step 1");
+        params.put("payment_method_types", paymentMethodTypes);
+        params.put("receipt_email", "jenny.rosen@example.com");
+
+        try {
+            Log.d("stripe", "step 2");
+            PaymentIntent.create(params);
+            Log.d("stripe", "step 3");
+        } catch (StripeException e) {
+            Log.d("stripe", "step 4");
+            e.printStackTrace();
+        }
     }
 
     void doMySearch(String querys) {
@@ -498,81 +555,7 @@ public class CharityListActivity extends AppCompatActivity {
     }
 
 
-    private static JSONObject getBaseRequest() throws JSONException {
-        return new JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0);
-    }
 
-
-    private static JSONObject getGatewayTokenizationSpecification() throws JSONException {
-        return new JSONObject(){{
-            put("type", "PAYMENT_GATEWAY");
-            put("parameters", new JSONObject(){{
-                put("gateway", "example");
-                put("gatewayMerchantId", "BCR2DN6T7O6534AW");
-            }
-            });
-        }};
-    }
-
-    private static JSONArray getAllowedCardNetworks() {
-        return new JSONArray()
-                .put("AMEX")
-                .put("DISCOVER")
-                .put("INTERAC")
-                .put("JCB")
-                .put("MASTERCARD")
-                .put("VISA");
-    }
-
-    private static JSONArray getAllowedCardAuthMethods() {
-        return new JSONArray()
-                .put("PAN_ONLY")
-                .put("CRYPTOGRAM_3DS");
-    }
-
-    private static JSONObject getBaseCardPaymentMethod() throws JSONException {
-        JSONObject cardPaymentMethod = new JSONObject();
-        cardPaymentMethod.put("type", "CARD");
-
-        JSONObject parameters = new JSONObject();
-        parameters.put("allowedAuthMethods", getAllowedCardAuthMethods());
-        parameters.put("allowedCardNetworks", getAllowedCardNetworks());
-        // Optionally, you can add billing address/phone number associated with a CARD payment method.
-        parameters.put("billingAddressRequired", true);
-
-        JSONObject billingAddressParameters = new JSONObject();
-        billingAddressParameters.put("format", "FULL");
-
-        parameters.put("billingAddressParameters", billingAddressParameters);
-
-        cardPaymentMethod.put("parameters", parameters);
-
-        return cardPaymentMethod;
-    }
-
-    private static JSONObject getCardPaymentMethod() throws JSONException {
-        JSONObject cardPaymentMethod = getBaseCardPaymentMethod();
-        cardPaymentMethod.put("tokenizationSpecification", getGatewayTokenizationSpecification());
-
-        return cardPaymentMethod;
-    }
-
-    public static PaymentsClient createPaymentsClient(Activity activity) {
-        Wallet.WalletOptions walletOptions =
-                new Wallet.WalletOptions.Builder().setEnvironment(Constants.PAYMENTS_ENVIRONMENT).build();
-        return Wallet.getPaymentsClient(activity, walletOptions);
-    }
-    public static Optional<JSONObject> getIsReadyToPayRequest() {
-        try {
-            JSONObject isReadyToPayRequest = getBaseRequest();
-            isReadyToPayRequest.put(
-                    "allowedPaymentMethods", new JSONArray().put(getBaseCardPaymentMethod()));
-
-            return Optional.of(isReadyToPayRequest);
-        } catch (JSONException e) {
-            return Optional.empty();
-        }
-    }
 
 public void onMyScroll(AbsListView lw, final int firstVisibleItem,
 final int visibleItemCount, final int totalItemCount) {
