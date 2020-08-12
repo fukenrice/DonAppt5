@@ -17,6 +17,7 @@ import com.example.donappt5.CharitiesMapActivity;
 import com.example.donappt5.CharityCreationActivity;
 import com.example.donappt5.CharityListActivity;
 import com.example.donappt5.ProfileActivity;
+import com.example.donappt5.QRStuff.QRGenerateActivity;
 import com.example.donappt5.R;
 import com.example.donappt5.SettingsActivity;
 import com.facebook.AccessToken;
@@ -112,6 +113,9 @@ public class MyGlobals{
                         Intent intent5 = new Intent(ctx, CharityListActivity.class);
                         activity.startActivity(intent5);
                         break;
+                    case R.id.qr:
+                        Intent intent6 = new Intent(ctx, QRGenerateActivity.class);
+                        activity.startActivity(intent6);
                     default:
                         return true;
                 }

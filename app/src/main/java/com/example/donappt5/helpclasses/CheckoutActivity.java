@@ -72,7 +72,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
             try {
                 String line, newjson = "";
-                URL url = new URL("[YOUR_SERVER_CHARGE_SCRIPT_URL]");
+                URL url = new URL("https://donapp-d2378.firebaseapp.com/charge");
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
                     while ((line = reader.readLine()) != null) {
                         newjson += line;

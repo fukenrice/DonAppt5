@@ -85,7 +85,7 @@ public class PayActivity extends AppCompatActivity {
         */
 
 
-        stripe.createToken(card, "[YOUR_PUBLISHABLE_KEY_TEST_HERE]", new ApiResultCallback<Token>() {
+        stripe.createToken(card, "pk_test_GSMF14GK1NPKphtwTYRYl60W0083LGv2jw", new ApiResultCallback<Token>() {
             public void onSuccess(Token token) {
                 // TODO: Send Token information to your backend to initiate a charge
                 Toast.makeText(ctx, "Token created: " + token.getId(), Toast.LENGTH_LONG).show();
@@ -128,7 +128,7 @@ public class PayActivity extends AppCompatActivity {
     public void postData(String description, String token,String amount) {
         // Create a new HttpClient and Post Header
         try {
-            URL url = new URL("[YOUR_SERVER_CHARGE_SCRIPT_URL]");
+            URL url = new URL("https://donapp-d2378.firebaseapp.com/charge");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000);
             conn.setConnectTimeout(15000);

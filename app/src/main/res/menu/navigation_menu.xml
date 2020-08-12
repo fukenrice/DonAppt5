@@ -22,4 +22,8 @@
         android:id="@+id/browse"
         android:icon="@drawable/ic_edit_24px"
         android:title="Browse" />
+    <item
+        android:id="@+id/qr"
+        android:icon="@drawable/ic_edit_24px"
+        android:title="qr" />
 </menu>

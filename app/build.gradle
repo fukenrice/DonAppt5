@@ -32,7 +32,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     def nav_version = '2.3.0-alpha04'
 
-    implementation 'com.google.firebase:firebase-analytics:17.4.2'
+    implementation 'com.google.firebase:firebase-analytics:17.4.4'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
@@ -40,6 +40,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-wallet:18.0.0'
     implementation "com.stripe:stripe-java:19.13.0"
     implementation "com.stripe:stripe-android:14.4.1"
+    implementation "com.github.nisrulz:qreader:2.1.2"
+    implementation "com.karumi:dexter:5.0.0"
+    implementation 'com.google.android.gms:play-services-vision:18.0.0'
 
     implementation 'androidx.preference:preference:1.1.1'
     testImplementation 'junit:junit:4.12'
