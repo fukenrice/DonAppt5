@@ -154,7 +154,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                     Map<String, Object> usermap = new HashMap<>();
                                     if (curuser.username != null) {usermap.put("name", curuser.username);}
                                     if (curuser.email != null) {usermap.put("mail", curuser.email);}
-                                    if (curuser.photoUrl != null) {usermap.put("photo", curuser.photoUrl);}
+                                    if (curuser.photoUrl != null) {usermap.put("photo", curuser.photoUrl.toString());}
 
                                     Log.d("enteringUser", curuser.username + curuser.email + curuser.photoUrl);
 

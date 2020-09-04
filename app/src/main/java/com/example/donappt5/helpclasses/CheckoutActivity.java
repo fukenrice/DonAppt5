@@ -9,11 +9,11 @@ import android.widget.LinearLayout;
 
 import com.example.donappt5.R;
 import com.stripe.android.Stripe;
-import com.stripe.exception.AuthenticationException;
-import com.stripe.exception.CardException;
-import com.stripe.exception.InvalidRequestException;
-import com.stripe.model.Plan;
-import com.stripe.model.PlanCollection;
+//import com.stripe.exception.AuthenticationException;
+//import com.stripe.exception.CardException;
+//import com.stripe.exception.InvalidRequestException;
+//import com.stripe.model.Plan;
+//import com.stripe.model.PlanCollection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +43,6 @@ public class CheckoutActivity extends AppCompatActivity {
 
     Stripe stripe;
     ArrayList<SimplePlan> planArrayList;
-    PlanCollection planCollection;
     RecyclerView recyclerView;
     ItemsAdapter adapter;
     Activity thisact;

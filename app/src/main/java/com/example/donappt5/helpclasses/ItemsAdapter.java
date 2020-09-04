@@ -9,7 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.donappt5.R;
-import com.stripe.model.Plan;
+//import com.stripe.model.Plan;
 import java.util.ArrayList;
 
 import androidx.recyclerview.widget.RecyclerView;

@@ -17,10 +17,10 @@ import com.stripe.android.model.Card;
 import com.stripe.android.model.Token;
 
 
-import com.stripe.exception.AuthenticationException;
-import com.stripe.exception.CardException;
-import com.stripe.exception.InvalidRequestException;
-import com.stripe.model.Charge;
+//import com.stripe.exception.AuthenticationException;
+//import com.stripe.exception.CardException;
+//import com.stripe.exception.InvalidRequestException;
+//import com.stripe.model.Charge;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

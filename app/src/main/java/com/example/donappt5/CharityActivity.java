@@ -22,6 +22,7 @@ import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.helpclasses.Charity;
 import com.example.donappt5.helpclasses.CheckoutActivity;
 import com.example.donappt5.helpclasses.MyGlobals;
+import com.example.donappt5.paymentsstuff.CardSubmitActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -94,7 +95,7 @@ public class CharityActivity extends AppCompatActivity {
         btnDonate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent1 = new Intent(ctx, CheckoutActivity.class);
+                Intent intent1 = new Intent(ctx, CardSubmitActivity.class);
                 startActivity(intent1);
 
             }

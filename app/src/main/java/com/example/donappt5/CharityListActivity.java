@@ -47,10 +47,12 @@ import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
 import com.koalap.geofirestore.GeoQueryEventListener;
 //import com.squareup.picasso.Picasso;
-import com.stripe.Stripe;
+//import com.stripe.Stripe;
 import com.stripe.android.PaymentConfiguration;
-import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
+import com.stripe.android.Stripe;
+import com.stripe.android.model.PaymentIntent;
+//import com.stripe.exception.StripeException;
+//import com.stripe.model.PaymentIntent;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -233,9 +235,8 @@ public class CharityListActivity extends AppCompatActivity {
 
 
     void testStripe() {
-        Stripe.apiKey = "sk_test_GNf5grKS0aC07sxFk6Yg2sED00sjKdHRoT";
 
-        Log.d("stripe", Stripe.apiKey);
+        //Log.d("stripe", Stripe.apiKey);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("amount", 1000);
         params.put("currency", "usd");
@@ -245,14 +246,7 @@ public class CharityListActivity extends AppCompatActivity {
         params.put("payment_method_types", paymentMethodTypes);
         params.put("receipt_email", "jenny.rosen@example.com");
 
-        try {
-            Log.d("stripe", "step 2");
-            PaymentIntent.create(params);
-            Log.d("stripe", "step 3");
-        } catch (StripeException e) {
-            Log.d("stripe", "step 4");
-            e.printStackTrace();
-        }
+
     }
 
     void doMySearch(String querys) {
