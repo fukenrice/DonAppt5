@@ -92,14 +92,6 @@ public class CharityActivity extends AppCompatActivity {
         fraggoal = new CharityGoalsFragment();
         fragforum = new CharityForumFragment();
         btnDonate = findViewById(R.id.DonateButton);
-        btnDonate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent1 = new Intent(ctx, CardSubmitActivity.class);
-                startActivity(intent1);
-
-            }
-        });
         descChar = new Charity(intent.getStringExtra("chname"),
                                intent.getStringExtra("bdesc"),
                                intent.getStringExtra("fdesc"),
@@ -107,6 +99,15 @@ public class CharityActivity extends AppCompatActivity {
                                intent.getIntExtra   ("image", 0),
                                intent.getIntExtra   ("id", -1),
                                intent.getStringExtra("url"));
+        btnDonate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent1 = new Intent(ctx, CardSubmitActivity.class);
+                intent1.putExtra("charityname", descChar.name);
+                startActivity(intent1);
+
+            }
+        });
         TextView tvName = (TextView) findViewById(R.id.tvName);
         ImageView ivImage = (ImageView) findViewById(R.id.ivImage);
         if (descChar.photourl != null) {

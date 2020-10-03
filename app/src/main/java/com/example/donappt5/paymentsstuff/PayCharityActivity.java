@@ -63,13 +63,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 
 
-public class CardSubmitActivity extends AppCompatActivity {
+public class PayCharityActivity extends AppCompatActivity {
     EditText etamount;
     Button btnSubmitCard;
     Button btnSubmitPayment;
     Context ctx;
     Spinner dropdown;
     private Stripe stripe;
+    String charityname;
 
     //private ActivityConnectWithStripeBinding viewBinding;
     private String paymentIntentClientSecret;
@@ -80,6 +81,9 @@ public class CardSubmitActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_requestcard);
+        Intent intent = getIntent();
+        charityname = intent.getStringExtra("charityname");
+
         etamount = findViewById(R.id.etAmount);
         btnSubmitCard = findViewById(R.id.btnSubmitCard);
         btnSubmitPayment = findViewById(R.id.btnCharge);
@@ -90,29 +94,20 @@ public class CardSubmitActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         db.collection("stripe_customers").document(user.getUid()).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                connected_account_id = (String)documentSnapshot.get("connected_account_id");
-                if ((connected_account_id != null) && (connected_account_id != "none")) {
-                    Log.d("stripeconnacc", "2connected acc id != null but " + connected_account_id);
-                    btnConnectStripe.setVisibility(View.GONE);
-                    stripe = new Stripe(
-                            ctx,
-                            PaymentConfiguration.getInstance(ctx).getPublishableKey(),
-                            connected_account_id
-                    );
-                }
-            }
-        });
-        if ((connected_account_id != null) && (connected_account_id != "none")) {
-            Log.d("stripeconnacc", "connected acc id != null but " + connected_account_id);
-            btnConnectStripe.setVisibility(View.GONE);
-            stripe = new Stripe(
-                    this,
-                    PaymentConfiguration.getInstance(this).getPublishableKey(),
-                    connected_account_id
-            );
-        }
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        connected_account_id = (String)documentSnapshot.get("connected_account_id");
+                        if ((connected_account_id != null) && (connected_account_id != "none")) {
+                            Log.d("stripeconnacc", "2connected acc id != null but " + connected_account_id);
+                            btnConnectStripe.setVisibility(View.GONE);
+                            stripe = new Stripe(
+                                    ctx,
+                                    PaymentConfiguration.getInstance(ctx).getPublishableKey(),
+                                    connected_account_id
+                            );
+                        }
+                    }
+                });
 
         dropdown = findViewById(R.id.spinnerMethods);
         String[] array = {"undefined"};
@@ -122,7 +117,7 @@ public class CardSubmitActivity extends AppCompatActivity {
         dropdown.setAdapter(adapter);
         startCheckout();
 
-        //WeakReference<CardSubmitActivity> weakActivity = new WeakReference<>(this);
+        //WeakReference<PayCharityActivity> weakActivity = new WeakReference<>(this);
         btnSubmitCard.setOnClickListener((View view) -> {
             // Get the card details from the card widget
             CardInputWidget cardInputWidget = findViewById(R.id.cardInputWidget);
@@ -221,32 +216,34 @@ public class CardSubmitActivity extends AppCompatActivity {
 
     String BACKEND_URL = "https://donapp-d2378.firebaseapp.com/";
 
-
     private void startCheckout() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        String endpointUrl = "https://donapp-d2378.firebaseapp.com/create-payment-intent-customer"
-                + "?currency=" + "usd"
-                + "&amount=" + "228322"
-                + "&destination_id=" + user.getUid();
-        Log.d("stripeasync", "executing " + endpointUrl);
-        new RequestTask().execute(endpointUrl);
-        Log.d("stripeasync", "executing in process ");
         //https://donapp-d2378.firebaseapp.com/create-payment-intent-customer?currency=usd&amount=132&destination_id=EUNOaNRQfyYlAummUev37EKg2qH3
 
         // Create a PaymentIntent by calling the sample server's /create-payment-intent endpoint.
         // Hook up the pay button to the card widget and stripe instance
         Button payButton = findViewById(R.id.btnPayStripeConnect);
         payButton.setOnClickListener((View view) -> {
-            CardInputWidget cardInputWidget = findViewById(R.id.cardInputWidget);
-            PaymentMethodCreateParams params = cardInputWidget.getPaymentMethodCreateParams();
-            if (params != null) {
-                Log.d("stripepayment", "paramsnotnull " + paymentIntentClientSecret + "/" );
-                ConfirmPaymentIntentParams confirmParams = ConfirmPaymentIntentParams
-                        .createWithPaymentMethodCreateParams(params, paymentIntentClientSecret);
-                stripe.confirmPayment(this, confirmParams);
-            }
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+            String endpointUrl = "https://donapp-d2378.firebaseapp.com/create-payment-intent-charity"
+                    + "?currency=" + "usd"
+                    + "&amount=" + etamount.getText().toString()
+                    + "&destination_id=" + charityname;
+            Log.d("stripeasync", "executing " + endpointUrl);
+            new RequestTask().execute(endpointUrl);
+            Log.d("stripeasync", "executing in process ");
         });
+    }
+
+    public void ConfirmPayment() {
+        CardInputWidget cardInputWidget = findViewById(R.id.cardInputWidget);
+        PaymentMethodCreateParams params = cardInputWidget.getPaymentMethodCreateParams();
+        if (params != null) {
+            Log.d("stripepayment", "paramsnotnull " + paymentIntentClientSecret + "/" );
+            ConfirmPaymentIntentParams confirmParams = ConfirmPaymentIntentParams
+                    .createWithPaymentMethodCreateParams(params, paymentIntentClientSecret);
+            stripe.confirmPayment(this, confirmParams);
+        }
     }
 
     class RequestTask extends AsyncTask<String, String, String> {
@@ -288,15 +285,16 @@ public class CardSubmitActivity extends AppCompatActivity {
             Log.e("stripetokenresult", "result: " + result);
             Toast.makeText(ctx, "request result: " + result, Toast.LENGTH_LONG).show();
             paymentIntentClientSecret = result;
+            ConfirmPayment();
             //Do anything with response..
         }
     }
 
     private static final class PaymentResultCallback
             implements ApiResultCallback<PaymentIntentResult> {
-        @NonNull private final WeakReference<CardSubmitActivity> activityRef;
+        @NonNull private final WeakReference<PayCharityActivity> activityRef;
 
-        PaymentResultCallback(@NonNull CardSubmitActivity activity) {
+        PaymentResultCallback(@NonNull PayCharityActivity activity) {
             Log.d("stripepaycback", "PaymentResultCallback constructor");
             activityRef = new WeakReference<>(activity);
         }
@@ -304,7 +302,7 @@ public class CardSubmitActivity extends AppCompatActivity {
         @Override
         public void onSuccess(@NonNull PaymentIntentResult result) {
             Log.d("stripe payments", "payment onSuccess");
-            final CardSubmitActivity activity = activityRef.get();
+            final PayCharityActivity activity = activityRef.get();
             if (activity == null) {
                 return;
             }
@@ -334,7 +332,7 @@ public class CardSubmitActivity extends AppCompatActivity {
 
         @Override
         public void onError(@NonNull Exception e) {
-            final CardSubmitActivity activity = activityRef.get();
+            final PayCharityActivity activity = activityRef.get();
             if (activity == null) {
                 return;
             }
@@ -395,6 +393,4 @@ public class CardSubmitActivity extends AppCompatActivity {
             }
         });
     }
-
-
 }

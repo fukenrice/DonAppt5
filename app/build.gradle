@@ -4,6 +4,7 @@ apply plugin: 'com.google.gms.google-services'
 android {
     compileSdkVersion 28
 
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "com.example.donappt5"
@@ -76,13 +77,16 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:6.3.0'
 
 
-    implementation 'com.facebook.android:facebook-core:5.0.0'
-    implementation 'com.facebook.android:facebook-login:5.0.0'
-    implementation 'com.facebook.android:facebook-share:5.0.0'
-    implementation 'com.facebook.android:facebook-places:5.0.0'
-    implementation 'com.facebook.android:facebook-messenger:5.0.0'
-    implementation 'com.facebook.android:facebook-applinks:5.0.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.2.0'
+    implementation 'com.facebook.android:facebook-core:6.3.0'
+    implementation 'com.facebook.android:facebook-login:6.3.0'
+    implementation 'com.facebook.android:facebook-share:6.3.0'
+    implementation 'com.facebook.android:facebook-places:6.3.0'
+    implementation 'com.facebook.android:facebook-messenger:6.3.0'
+    implementation 'com.facebook.android:facebook-applinks:6.3.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.8.1'
+
+
+    implementation 'org.apache.httpcomponents:httpcore:4.4.10'
 
     implementation('com.mikepenz.materialdrawer:library:2.9.8@aar') {
         transitive = true
