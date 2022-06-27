@@ -84,13 +84,6 @@ public class CharityListActivity extends AppCompatActivity {
     Context ctx;
     private Toolbar mTopToolbar;
     //private FirebaseAnalytics mFirebaseAnalytics;
-    private DrawerLayout drawerlayout;
-    private ActionBarDrawerToggle actionbartoggle;
-    private NavigationView navigationview;
-    private DatabaseReference mDataBase;
-    FirebaseFirestore mFirestore;
-    Query mQuery;
-    int totalcharitiesloaded;
     SwipeRefreshLayout pullToRefresh;
     DocumentSnapshot lastVisible;
     private int prelast;
@@ -407,7 +400,7 @@ public class CharityListActivity extends AppCompatActivity {
 
                 @Override
                 public void onGeoQueryError(Exception exception) {
-                    Log.d("geoquery", "fuck:" + exception);
+                    Log.d("geoquery", "dam:" + exception);
                 }
             });
         }

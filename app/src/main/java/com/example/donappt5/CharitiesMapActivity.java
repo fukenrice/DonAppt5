@@ -67,19 +67,14 @@ import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 
 public class CharitiesMapActivity extends AppCompatActivity implements OnMapReadyCallback {
-    private static final double EARTH_CIRCUMFERENCE_METERS = 40075000;
-    Button btnCancel;
-    Button btnGiveGeo;
     MapView mapView;
     private GoogleMap gmap;
     int PERMISSION_ID = 3575;
     FusedLocationProviderClient mFusedLocationClient;
     private static final String MAP_VIEW_BUNDLE_KEY = "MapViewBundleKey";
     private Marker mLocation;
-    ImageButton imgbtnCancel;
     double latitude = -1000;
     double longitude = -1000;
-    Vector<Marker> loadedmarkers;
     GeoQuery geoQuery;
     private ClusterManager<MyClusterItem> mClusterManager;
     Context context;
@@ -159,7 +154,7 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
 
             @Override
             public void onGeoQueryError(Exception exception) {
-                Log.d("geoquery", "fuck:" + exception);
+                Log.d("geoquery", "dam:" + exception);
             }
         });
     }
@@ -369,6 +364,8 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
             }
         });
     }
+
+    private static final double EARTH_CIRCUMFERENCE_METERS = 40075000;
 
     public double getPixelsPerMeter(double lat, double zoom) {
         double pixelsPerTile = 256 * ((double)context.getResources().getDisplayMetrics().densityDpi / 160);

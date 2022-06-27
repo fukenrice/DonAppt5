@@ -63,7 +63,6 @@ public class CharityAdapter extends BaseAdapter {
         // заполняем View в пункте списка данными из товаров: наименование, цена
         // и картинка
         ((TextView) view.findViewById(R.id.tvDescr)).setText(c.briefDescription);
-        ((TextView) view.findViewById(R.id.tvRating)).setText(String.valueOf(c.trust));
         ((TextView) view.findViewById(R.id.tvName)).setText(c.name);
         ((ImageView)(view.findViewById(R.id.ivImage))).setImageResource(R.drawable.ic_launcher_foreground);
 

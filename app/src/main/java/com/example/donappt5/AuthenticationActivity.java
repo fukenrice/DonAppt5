@@ -77,8 +77,8 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
     }
 
-    CallbackManager callbackManager;
     private void initFaceBook() {
+        CallbackManager callbackManager;
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {

@@ -1,19 +1,23 @@
 package com.example.donappt5;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.donappt5.helpclasses.Friend;
@@ -51,6 +55,7 @@ import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -75,6 +80,8 @@ public class ProfileActivity extends AppCompatActivity {
     FriendsAdapter friendsAdapter;
     ArrayList<Friend> friends;
     Button btnFavs;
+    TextView tvUserName;
+    Button btnChangeName;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,24 +94,22 @@ public class ProfileActivity extends AppCompatActivity {
         myGlobals = new MyGlobals(ctx);
         myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_layout_profile));
 
+        btnChangeName = findViewById(R.id.btnChangeName);
+        btnChangeName.setOnClickListener(view -> requestNameChange());
+
         btnLogOut = findViewById(R.id.btnLogOut);
-        btnLogOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LoginManager.getInstance().logOut();
-                AuthUI.getInstance()
-                        .signOut(ctx)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            public void onComplete(@NonNull Task<Void> task) {
-                                // ...
-                                Intent intent = new Intent(ctx, AuthenticationActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-            }
+        btnLogOut.setOnClickListener(v -> {
+            LoginManager.getInstance().logOut();
+            AuthUI.getInstance()
+                    .signOut(ctx)
+                    .addOnCompleteListener(task -> {
+                        Intent intent = new Intent(ctx, AuthenticationActivity.class);
+                        startActivity(intent);
+                    });
         });
 
         ivProfile = findViewById(R.id.ivProfilePhoto);
+        tvUserName = findViewById(R.id.tvUserName);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -116,8 +121,9 @@ public class ProfileActivity extends AppCompatActivity {
                     DocumentSnapshot document = task.getResult();
                     photourlfromstore = document.getString("photourl");
                     Picasso.with(ctx).load(photourlfromstore).fit().into(ivProfile);
+                    tvUserName.setText(document.getString("name"));
                 } else {
-                    Log.d("fuck", "get failed with ", task.getException());
+                    Log.d("dam", "get failed with ", task.getException());
                 }
             }
         });
@@ -145,17 +151,34 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
         btnFavs = findViewById(R.id.btnFavs);
-        btnFavs.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onFavsClick();
-            }
-        });
+        btnFavs.setOnClickListener(v -> onFavsClick());
 //read_custom_friendlists
         manageFriendsListView();
     }
 
+    void requestNameChange() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Title");
 
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            String ans = input.getText().toString();
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+            HashMap<String, Object> update = new HashMap<>();
+            update.put("name", ans);
+            tvUserName.setText(ans);
+
+            db.collection("users").document(user.getUid())
+                    .update(update);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
 
     void onFavsClick() {
         Intent intent = new Intent(ctx, CharityListActivity.class);
@@ -223,33 +246,28 @@ public class ProfileActivity extends AppCompatActivity {
 
             StorageReference imgsref = storageRef.child("users/" + user.getUid() + "/photo");
             UploadTask uploadTask = imgsref.putFile(file);
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    final FirebaseFirestore db = FirebaseFirestore.getInstance();
-                    storageRef.child("users/" + user.getUid() + "/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            // Got the download URL for 'users/me/profile.png'
-                            Log.d("urlgetter", uri.toString());
-                            fileUrl = uri.toString();
-                            Map<String, Object> hmap = new HashMap<>();
-                            hmap.put("photourl", fileUrl);
-                            Log.d("puttingphoto", "url: " + fileUrl);
-                            db.collection("users")
-                                    .document(user.getUid())
-                                    .update(hmap);
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            // Handle any errors
-                        }
-                    });
-                }
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                storageRef.child("users/" + user.getUid() + "/photo").getDownloadUrl().addOnSuccessListener(uri -> {
+                    // Got the download URL for 'users/me/profile.png'
+                    Log.d("urlgetter", uri.toString());
+                    fileUrl = uri.toString();
+                    Map<String, Object> hmap = new HashMap<>();
+                    hmap.put("photourl", fileUrl);
+                    Log.d("puttingphoto", "url: " + fileUrl);
+                    db.collection("users")
+                            .document(user.getUid())
+                            .update(hmap);
+                    Toast.makeText(ctx, "Image Set Successfully!", Toast.LENGTH_LONG).show();
+                }).addOnFailureListener(exception -> {
+                    Log.d("puttingphoto", exception.toString());
+                    // Handle any errors
+                });
             });
 
             //Log.d("urlgetter", fileUrl);
+        } else {
+            Log.d("puttingphoto", "nullpath");
         }
     }
 
@@ -290,31 +308,28 @@ public class ProfileActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (data == null) {return;}
 
-        new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (resultCode == RESULT_OK) {
-                        if (requestCode == SELECT_PICTURE) {
-                            // Get the url from data
-                            final Uri selectedImageUri = data.getData();
-                            if (null != selectedImageUri) {
-                                // Get the path from the Uri
-                                String path = getPathFromURI(selectedImageUri);
-                                pathtoimage = path;
-                                Log.i("imageloader", "Image Path : " + path);
-                                // Set the image in ImageView
-                                ivProfile.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ivProfile.setImageURI(selectedImageUri);
-                                        loadedUri = selectedImageUri;
-                                    }
-                                });
+        new Thread(() -> {
+            if (resultCode == RESULT_OK) {
+                if (requestCode == SELECT_PICTURE) {
+                    // Get the url from data
+                    final Uri selectedImageUri = data.getData();
+                    if (null != selectedImageUri) {
+                        // Get the path from the Uri
+                        String path = getPathFromURI(selectedImageUri);
+                        pathtoimage = path;
+                        Log.i("imageloader", "Image Path : " + path + " URI: " + selectedImageUri);
+                        // Set the image in ImageView
+                        ivProfile.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                ivProfile.setImageURI(selectedImageUri);
+                                loadedUri = selectedImageUri;
                             }
-                        }
+                        });
                     }
                 }
-            }).start();
+            }
+        }).start();
     }
 
     public String getPathFromURI(Uri contentUri) {

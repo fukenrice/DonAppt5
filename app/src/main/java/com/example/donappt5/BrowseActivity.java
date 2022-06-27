@@ -15,10 +15,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 public class BrowseActivity extends AppCompatActivity {
     MyGlobals myGlobals;
     Context context;
-    Toolbar mTopToolbar;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toolbar mTopToolbar;
         setContentView(R.layout.activity_browse);
         Log.d("progresstracker", "browseactivity");
         context = this;

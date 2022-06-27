@@ -57,13 +57,10 @@ public class CharityActivity extends AppCompatActivity {
     Charity descChar;
     Context ctx;
 
-    private GestureDetector gestureDetector;
     boolean addedtofavs = false;
     CharityDescFragment fragdesc;
     CharityGoalsFragment fraggoal;
     CharityForumFragment fragforum;
-    float lastX;
-    static final int PAGE_COUNT = 10;
     ImageView ivFavorite;
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -73,8 +70,6 @@ public class CharityActivity extends AppCompatActivity {
     private Toolbar mTopToolbar;
 
     private DrawerLayout drawerlayout;
-    private ActionBarDrawerToggle actionbartoggle;
-    private NavigationView navigationview;
     MyGlobals myGlobals;
     Button btnDonate;
 

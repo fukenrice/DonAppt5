@@ -91,15 +91,11 @@ public class CharityCreationActivity extends AppCompatActivity {
     ViewPager pager;
     PagerAdapter pagerAdapter;
     private DrawerLayout drawerlayout;
-    private ActionBarDrawerToggle actionbartoggle;
-    private NavigationView navigationview;
     EditText etName;
     TextView tvState;
-    private Toolbar mTopToolbar;
     Charity creatingChar;
-    private GestureDetector gestureDetector;
     int cart = 0, ckids = 1, cpov = 2, csci = 3, cheal = 4, cedu = 5;
-    boolean ctags[];
+    boolean[] ctags;
 
     String pathtoimage;
     String fileUrl;
@@ -108,7 +104,6 @@ public class CharityCreationActivity extends AppCompatActivity {
 
     CharityCreateDesc fragdesc;
     CharityCreateGoals fraggoal;
-    View fragdescview;
     Button btnCreate;
     double latitude = -1000;
     double longitude = -1000;
@@ -129,7 +124,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         Log.d("ActivityTracker", "entered CharityCreationActivity");
         etName = findViewById(R.id.etName);
         //TODO imageview
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(mTopToolbar);
         imgChange = findViewById(R.id.ivChangeImage);
 
@@ -179,7 +174,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         etName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                onTextChangeListener();
+                imgbtnCheckName.setImageResource(R.drawable.ic_sync);
             }
 
             @Override
@@ -231,10 +226,6 @@ public class CharityCreationActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    void onTextChangeListener() {
-        imgbtnCheckName.setImageResource(R.drawable.ic_sync);
     }
 
     void Flush() {
@@ -338,7 +329,7 @@ public class CharityCreationActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     // Handle unsuccessful uploads
-                    Log.d("storageprogresstracker", "fuck" + exception);
+                    Log.d("storageprogresstracker", "dam" + exception);
                 }
             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
@@ -434,7 +425,6 @@ public class CharityCreationActivity extends AppCompatActivity {
             location.put("longitude", longitude);
 
             Log.d("geoquery", "Am I even here?4");
-            //TODO: manage rules in console you stupid piece of shit, you real stupid piece of shit
             db.collection("charities").document(creatingChar.name).collection("locations").document("FirstLocation").set(location)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -498,7 +488,7 @@ public class CharityCreationActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onGeoQueryError(Exception exception) {
-                                    Log.d("geoquery", "fuck:" + exception);
+                                    Log.d("geoquery", "dam:" + exception);
                                 }
                             });
                         }
