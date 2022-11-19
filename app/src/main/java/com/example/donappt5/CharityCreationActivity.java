@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import com.example.donappt5.CharityCreationFragments.CharityCreateDesc;
 import com.example.donappt5.CharityCreationFragments.CharityCreateGoals;
+import com.example.donappt5.CharityCreationFragments.CharityCreatePaymentCredentials;
 import com.example.donappt5.PopupActivities.ActivityConfirm;
 import com.example.donappt5.PopupActivities.LocatorActivity;
 import com.example.donappt5.PopupActivities.TagsActivity;
@@ -103,6 +104,7 @@ public class CharityCreationActivity extends AppCompatActivity {
     TextView tvNameCheck;
 
     CharityCreateDesc fragdesc;
+    CharityCreatePaymentCredentials fragcred;
     CharityCreateGoals fraggoal;
     Button btnCreate;
     double latitude = -1000;
@@ -136,6 +138,7 @@ public class CharityCreationActivity extends AppCompatActivity {
             }
         });
         fragdesc = new CharityCreateDesc();
+        fragcred = new CharityCreatePaymentCredentials();
         fraggoal = new CharityCreateGoals();
         tvState = findViewById(R.id.tvState);
         pager = findViewById(R.id.ChangePager);
@@ -305,6 +308,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         creatingChar = new Charity();
         creatingChar.name = etName.getText().toString();
         creatingChar.fullDescription = fragdesc.getText();
+        creatingChar.paymentUrl = fragcred.getText();
         creatingChar.briefDescription = creatingChar.fullDescription.substring(0, min(creatingChar.fullDescription.length(), 50));
         // Access a Cloud Firestore instance from your Activity
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -313,6 +317,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         charity.put("name", creatingChar.name);
         charity.put("description", creatingChar.fullDescription);
+        charity.put("qiwiurl", creatingChar.paymentUrl);
         charity.put("creatorid", user.getUid());
 
         Log.d("storageprogresstracker", "-1");
@@ -548,14 +553,15 @@ public class CharityCreationActivity extends AppCompatActivity {
             switch(pos) {
 
                 case 0: return fragdesc;
-                case 1: return fraggoal;
+                case 1: return fragcred;
+                case 2: return fraggoal;
                 default: return fragdesc;
             }
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
     }
 

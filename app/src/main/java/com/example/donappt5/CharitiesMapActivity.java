@@ -1,28 +1,29 @@
 package com.example.donappt5;
 
+import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.donappt5.R;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+
 import com.example.donappt5.helpclasses.Charity;
 import com.example.donappt5.helpclasses.MyClusterItem;
 import com.example.donappt5.helpclasses.MyGlobals;
@@ -46,25 +47,13 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.koalap.geofirestore.GeoFire;
 import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
 import com.koalap.geofirestore.GeoQueryEventListener;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Vector;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-
-import static java.lang.Math.min;
-import static java.lang.Math.sqrt;
 
 public class CharitiesMapActivity extends AppCompatActivity implements OnMapReadyCallback {
     MapView mapView;
@@ -345,12 +334,14 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
                                 clickedCharity.fullDescription = (String)document.get("description");
                                 clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
                                 clickedCharity.photourl = (String)document.get("photourl");
+                                clickedCharity.paymentUrl = document.getString("qiwiurl");
 
                                 Intent intent = new Intent(context, CharityActivity.class);
                                 intent.putExtra("chname", clickedCharity.name);
                                 intent.putExtra("bdesc", clickedCharity.briefDescription);
                                 intent.putExtra("fdesc", clickedCharity.fullDescription);
                                 intent.putExtra   ("url", clickedCharity.photourl);
+                                intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
                                 startActivity(intent);
 
                             } else {
