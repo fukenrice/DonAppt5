@@ -9,17 +9,31 @@ public class Charity {
     public int image;
     public String photourl;
     public int id;
+    public String paymentUrl;
 
 
     public Charity(String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl) {
-        name = gname;
-        briefDescription = gbdesc;
-        fullDescription = gfdesc;
-        trust = gtrust;
-        image = gim;
-        id = gid;
-        photourl = gphotourl;
+        this.name = gname;
+        this.briefDescription = gbdesc;
+        this.fullDescription = gfdesc;
+        this.trust = gtrust;
+        this.image = gim;
+        this.id = gid;
+        this.photourl = gphotourl;
+        this.paymentUrl = null;
     }
+
+    public Charity(String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl, String paymentUrl) {
+        this.name = gname;
+        this.briefDescription = gbdesc;
+        this.fullDescription = gfdesc;
+        this.trust = gtrust;
+        this.image = gim;
+        this.id = gid;
+        this.photourl = gphotourl;
+        this.paymentUrl = paymentUrl;
+    }
+
     public Charity() {
         name = "defaultconstructor";
         briefDescription = "defaultconstructor";

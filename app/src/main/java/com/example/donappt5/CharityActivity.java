@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,29 +19,23 @@ import com.example.donappt5.CharityDescriptionFragments.CharityDescFragment;
 import com.example.donappt5.CharityDescriptionFragments.CharityForumFragment;
 import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.helpclasses.Charity;
-import com.example.donappt5.helpclasses.CheckoutActivity;
 import com.example.donappt5.helpclasses.MyGlobals;
-import com.example.donappt5.paymentsstuff.CardSubmitActivity;
+import com.example.donappt5.paymentsstuff.QiwiPaymentActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.koalap.geofirestore.GeoFire;
-import com.koalap.geofirestore.GeoLocation;
 import com.squareup.picasso.Picasso;
 //import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -73,7 +66,7 @@ public class CharityActivity extends AppCompatActivity {
     MyGlobals myGlobals;
     Button btnDonate;
 
-    public void onCreate (Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         ctx = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_charitydesc);
@@ -87,20 +80,27 @@ public class CharityActivity extends AppCompatActivity {
         fraggoal = new CharityGoalsFragment();
         fragforum = new CharityForumFragment();
         btnDonate = findViewById(R.id.DonateButton);
+        // TODO: Получать еще ссылку оплаты
         descChar = new Charity(intent.getStringExtra("chname"),
-                               intent.getStringExtra("bdesc"),
-                               intent.getStringExtra("fdesc"),
-                               intent.getFloatExtra ("trust", 0),
-                               intent.getIntExtra   ("image", 0),
-                               intent.getIntExtra   ("id", -1),
-                               intent.getStringExtra("url"));
+                intent.getStringExtra("bdesc"),
+                intent.getStringExtra("fdesc"),
+                intent.getFloatExtra("trust", 0),
+                intent.getIntExtra("image", 0),
+                intent.getIntExtra("id", -1),
+                intent.getStringExtra("url"),
+                intent.getStringExtra("qiwiPaymentUrl"));
         btnDonate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent1 = new Intent(ctx, CardSubmitActivity.class);
-                intent1.putExtra("charityname", descChar.name);
-                startActivity(intent1);
-
+                if (!Objects.equals(descChar.paymentUrl, "") && descChar.paymentUrl != null) {
+                    Intent intent1 = new Intent(ctx, QiwiPaymentActivity.class);
+                    intent1.putExtra("charityname", descChar.name);
+                    // String token = // TODO: Получать токен или ссылку для оплаты из бд
+                    intent1.putExtra("qiwiPaymentUrl", descChar.paymentUrl);
+                    startActivity(intent1);
+                } else {
+                    Toast.makeText(getApplicationContext(), R.string.no_payment_credentials_message, Toast.LENGTH_SHORT).show();
+                }
             }
         });
         TextView tvName = (TextView) findViewById(R.id.tvName);
@@ -184,7 +184,7 @@ public class CharityActivity extends AppCompatActivity {
             ivFavorite.setImageResource(R.drawable.ic_favorite_off);
             final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
-             db.collection("users").document(user.getUid()).collection("favorites").document(descChar.name).delete();
+            db.collection("users").document(user.getUid()).collection("favorites").document(descChar.name).delete();
         } else {
             addedtofavs = true;
             ivFavorite.setImageResource(R.drawable.ic_favorite_on);
@@ -206,11 +206,15 @@ public class CharityActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int pos) {
-            switch(pos) {
-                case 0: return CharityDescFragment.newInstance(descChar);
-                case 1: return CharityGoalsFragment.newInstance(descChar);
-                case 2: return CharityForumFragment.newInstance(descChar);
-                default: return CharityForumFragment.newInstance(descChar);
+            switch (pos) {
+                case 0:
+                    return CharityDescFragment.newInstance(descChar);
+                case 1:
+                    return CharityGoalsFragment.newInstance(descChar);
+                case 2:
+                    return CharityForumFragment.newInstance(descChar);
+                default:
+                    return CharityForumFragment.newInstance(descChar);
             }
         }
 
@@ -230,7 +234,8 @@ public class CharityActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();    switch(itemId) {
+        int itemId = item.getItemId();
+        switch (itemId) {
             // Android home
             case android.R.id.home:
                 drawerlayout.openDrawer(GravityCompat.START);
@@ -238,7 +243,8 @@ public class CharityActivity extends AppCompatActivity {
             case R.id.action_search:
                 Toast.makeText(CharityActivity.this, "Menu action clicked", Toast.LENGTH_LONG).show();
                 return true;
-        }    return super.onOptionsItemSelected(item);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
