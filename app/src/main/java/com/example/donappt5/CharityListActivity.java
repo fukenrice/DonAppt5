@@ -261,8 +261,9 @@ public class CharityListActivity extends AppCompatActivity {
                             String name = document.getString("name");
                             String desc = document.getString("description");
                             String url = document.getString("photourl");
+                            String qiwiPaymentUrl = document.getString("qiwiurl");
                             Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
-                            charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url));
+                            charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
                             charAdapter.notifyDataSetChanged();
                         }
                     }
