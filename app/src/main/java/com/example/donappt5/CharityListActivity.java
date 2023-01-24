@@ -112,7 +112,6 @@ public class CharityListActivity extends AppCompatActivity {
                 "pk_test_GSMF14GK1NPKphtwTYRYl60W0083LGv2jw"
         );
 
-        setupGooglePay();
         handleIntent(getIntent());
 
         pullToRefresh = findViewById(R.id.pullToRefresh);
@@ -426,7 +425,7 @@ public class CharityListActivity extends AppCompatActivity {
             taggedquery = db.collection("charities");
         }
 
-        if (lastVisible != null) {
+        if (lastVisible != null && charAdapter.objects.size() >= 20) {
             taggedquery
                     .startAfter(lastVisible)
                     .limit(20)
@@ -539,14 +538,9 @@ public class CharityListActivity extends AppCompatActivity {
                             startActivityForResult(intent, 3);
                         }
                     }
-                });//*/
+                });
 
     }
-
-    void setupGooglePay() {
-
-    }
-
 
     public void onMyScroll(AbsListView lw, final int firstVisibleItem,
                            final int visibleItemCount, final int totalItemCount) {

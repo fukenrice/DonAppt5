@@ -45,4 +45,10 @@
     <string name="qiwi_getting_url_hint">Необходимо зарегистророваться по адресу: https://qiwi.com/p2p-admin/transfers/link и вставить сренерированную ссылку в поле ниже</string>
     <string name="ok">Oк</string>
     <string name="no_payment_credentials_message">Организация пока не указала реквизиты для оплаты</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="confirm_changes">Confirm Changes</string>
+    <string name="delete_organisation">Delete organisation</string>
+    <string name="edit_location">Edit Location</string>
+    <string name="edit_tags">Edit tags</string>
 </resources>

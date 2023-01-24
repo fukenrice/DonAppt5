@@ -28,6 +28,9 @@ public class CharityCreateDesc extends Fragment {
         View v = inflater.inflate(R.layout.fragment_charitydescedit, container, false);
 
         etDesc = v.findViewById(R.id.etDescriptionEdit);
+        if (getArguments() != null)  {
+            etDesc.setText(getArguments().getString("desc", ""));
+        }
         Log.d(LOG_TAG, etDesc.getText().toString());
         //etDesc.setText(getArguments().getString("fdesc"));
         Log.d(LOG_TAG, "Fragment1 onCreate");
@@ -46,7 +49,7 @@ public class CharityCreateDesc extends Fragment {
         return etDesc.getText().toString();
     }
 
-    public static CharityCreateDesc newInstance(Charity given) {
+    public static CharityCreateDesc newInstance(String desc) {
 
         CharityCreateDesc f = new CharityCreateDesc();
         Bundle b = new Bundle();
@@ -56,6 +59,7 @@ public class CharityCreateDesc extends Fragment {
         b.putFloat("trust", given.trust);
         b.putInt("id", given.id);
         b.putInt("img", given.image);//*/
+        b.putString("desc", desc);
 
         f.setArguments(b);
 

@@ -137,8 +137,8 @@ public class CharityCreationActivity extends AppCompatActivity {
                 btnCreate();
             }
         });
-        fragdesc = new CharityCreateDesc();
-        fragcred = new CharityCreatePaymentCredentials();
+        fragdesc = CharityCreateDesc.newInstance("");
+        fragcred = CharityCreatePaymentCredentials.Companion.newInstance("");
         fraggoal = new CharityCreateGoals();
         tvState = findViewById(R.id.tvState);
         pager = findViewById(R.id.ChangePager);
@@ -187,7 +187,7 @@ public class CharityCreationActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-
+                checkName();
             }
         });
         tvNameCheck = findViewById(R.id.tvCharityNameCheck);
@@ -219,10 +219,12 @@ public class CharityCreationActivity extends AppCompatActivity {
                         Log.d("namechecker", "Document exists!");
                         imgbtnCheckName.setImageResource(R.drawable.ic_warning_foreground);
                         tvNameCheck.setText("charity with such name already exists. If you are it's owner, you can change it's contents");
+                        btnCreate.setClickable(false);
                     } else {
                         Log.d("namechecker", "Document does not exist!");
                         imgbtnCheckName.setImageResource(R.drawable.ic_check_foreground);
                         tvNameCheck.setText("charity with such name does not exist. You can create one!");
+                        btnCreate.setClickable(true);
                     }
                 } else {
                     Log.d("namechecker", "Failed with: ", task.getException());
@@ -236,22 +238,36 @@ public class CharityCreationActivity extends AppCompatActivity {
         // Access a Cloud Firestore instance from your Activity
     }
 
+    Boolean validateFields() {
+        if(etName.getText().toString().contains("/")) {
+            Toast.makeText(context, "I am afraid your charity's name cannot contain '/' symbol", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        if (etName.getText().toString().equals("")) {
+            Toast.makeText(
+                    this,
+                    "I am afraid your charity's name cannot be empty",
+                    Toast.LENGTH_LONG
+            ).show();
+            return false;
+        }
+        return true;
+    }
+
     void btnCreate() {
         //GeoFire geoFire = new GeoFire(ref); //TODO geofire???
         //if(etName.getText().toString().contains(" ")) {
         //    Toast.makeText(context, "I am afraid your charity's name cannot contain space symbol", Toast.LENGTH_LONG).show();
         //    return;
         //}
-        if(etName.getText().toString().contains("/")) {
-            Toast.makeText(context, "I am afraid your charity's name cannot contain '/' symbol", Toast.LENGTH_LONG).show();
-            return;
+        if (validateFields()) {
+            Intent intent = new Intent(context, LocatorActivity.class);
+            intent.putExtra("headertext", "Give us location of your charity, although not mandatory, it will help raise awareness in your local community. Hold on the marker and it.");
+            intent.putExtra("btnaccept", "We are here");
+            intent.putExtra("btncancel", "Skip this step");
+            startActivityForResult(intent, 1);
         }
-
-        Intent intent = new Intent(context, LocatorActivity.class);
-        intent.putExtra("headertext", "Give us location of your charity, although not mandatory, it will help raise awareness in your local community. Hold on the marker and it.");
-        intent.putExtra("btnaccept", "We are here");
-        intent.putExtra("btncancel", "Skip this step");
-        startActivityForResult(intent, 1);
     }
 
     @Override
@@ -321,7 +337,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         charity.put("creatorid", user.getUid());
 
         Log.d("storageprogresstracker", "-1");
-        if (pathtoimage != null) {
+        if (loadedUri != null) {
             Log.d("storageprogresstracker", "0");
             FirebaseStorage storage = FirebaseStorage.getInstance();
             final StorageReference storageRef = storage.getReference();
