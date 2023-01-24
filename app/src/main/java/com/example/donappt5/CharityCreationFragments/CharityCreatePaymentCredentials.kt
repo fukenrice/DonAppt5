@@ -1,8 +1,6 @@
 package com.example.donappt5.CharityCreationFragments
 
 import android.app.AlertDialog
-import android.content.DialogInterface
-import android.content.DialogInterface.BUTTON_POSITIVE
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,10 +11,6 @@ import com.example.donappt5.R
 import com.example.donappt5.databinding.FragmentCharityCreatePaymentCredentialsBinding
 import kotlinx.android.synthetic.main.fragment_charity_create_payment_credentials.view.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -28,6 +22,24 @@ class CharityCreatePaymentCredentials : Fragment() {
     private var _binding: FragmentCharityCreatePaymentCredentialsBinding? = null
     private val binding get() = _binding!!
     private var qiwiEditText: EditText? = null
+    private var url: String? = null
+
+    companion object {
+        const val ARG_URL = "url"
+
+
+        fun newInstance(name: String = ""): CharityCreatePaymentCredentials {
+            val fragment = CharityCreatePaymentCredentials()
+
+            val bundle = Bundle().apply {
+                putString(ARG_URL, name)
+            }
+
+            fragment.arguments = bundle
+
+            return fragment
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,20 +48,17 @@ class CharityCreatePaymentCredentials : Fragment() {
         _binding =
             FragmentCharityCreatePaymentCredentialsBinding.inflate(inflater, container, false)
         val view = binding.root
+        url = arguments?.getString(ARG_URL)
         setupView(view)
         return view
     }
 
     private fun setupView(view: View) {
         qiwiEditText = view.qiwiPaymentUrlEditText
+        qiwiEditText?.setText(url)
         view.qiwiPaymentInfoButton.setOnClickListener {
             showInfoAlertDialog()
         }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        qiwiEditText = requireView().findViewById<View>(R.id.qiwiPaymentUrlEditText) as EditText
     }
 
     private fun showInfoAlertDialog() {
@@ -64,22 +73,5 @@ class CharityCreatePaymentCredentials : Fragment() {
         return qiwiEditText?.text.toString()
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CharityCreatePaymentCredentials.
-         */
-        @JvmStatic
-        fun newInstance() =
-            CharityCreatePaymentCredentials().apply {
-                arguments = Bundle().apply {
-//                    putString(ARG_PARAM1, param1)
-//                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
+
 }
