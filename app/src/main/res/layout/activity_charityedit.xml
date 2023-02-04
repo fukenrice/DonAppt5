@@ -9,12 +9,6 @@
     android:fitsSystemWindows="true"
     tools:context=".CharityEditActivity">
 
-
-    <include
-        layout="@layout/app_bar_main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -145,10 +139,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:text="@string/edit_location" />
-
-
             </LinearLayout>
-
         </LinearLayout>
     </LinearLayout>
 
