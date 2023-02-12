@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:stretchColumns="*">
+
+    <EditText
+        android:id="@+id/etCharityName"
+        android:text=""
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:singleLine="true"
+        android:hint="Organization name"/>
+    <EditText
+        android:id="@+id/etDonation"
+        android:text=""
+        android:inputType="numberDecimal"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:hint="Monthly donate(opt)"/>
+    <ImageButton
+        android:id="@+id/btnDeleteRow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/ic_minus" />
+
+</TableRow>
