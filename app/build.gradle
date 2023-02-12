@@ -1,3 +1,8 @@
+plugins {
+    id "org.jetbrains.kotlin.plugin.serialization" version "1.8.20-Beta"
+}
+
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
@@ -107,4 +112,6 @@ dependencies {
         transitive = true
     }
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 }

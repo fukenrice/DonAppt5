@@ -16,6 +16,7 @@ import com.example.donappt5.BrowseActivity;
 import com.example.donappt5.CharitiesMapActivity;
 import com.example.donappt5.CharityCreationActivity;
 import com.example.donappt5.CharityListActivity;
+import com.example.donappt5.OnBoardingActivity;
 import com.example.donappt5.OwnedCharityListActivity;
 import com.example.donappt5.ProfileActivity;
 import com.example.donappt5.QRStuff.QRGenerateActivity;
@@ -90,13 +91,13 @@ public class MyGlobals {
                         break;
                     case R.id.settings:
                         Toast.makeText(ctx, "Settings", Toast.LENGTH_SHORT).show();
-                        Intent intent2 = new Intent(ctx, SettingsActivity.class);
-                        activity.startActivity(intent2);
+                        Intent intent1 = new Intent(ctx, SettingsActivity.class);
+                        activity.startActivity(intent1);
                         break;
                     case R.id.create:
                         Toast.makeText(ctx, "Create Charity", Toast.LENGTH_SHORT).show();
-                        Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
-                        activity.startActivity(intent1);
+                        Intent intent2 = new Intent(ctx, CharityCreationActivity.class);
+                        activity.startActivity(intent2);
                         break;
                     case R.id.map:
                         Toast.makeText(ctx, "Charities map", Toast.LENGTH_SHORT).show();
@@ -121,6 +122,11 @@ public class MyGlobals {
                     case R.id.qr:
                         Intent intent7 = new Intent(ctx, QRGenerateActivity.class);
                         activity.startActivity(intent7);
+                        break;
+                    case R.id.onboarding:
+                        Intent intent8 = new Intent(ctx, OnBoardingActivity.class);
+                        activity.startActivity(intent8);
+                        break;
                     default:
                         return true;
                 }
@@ -183,13 +189,13 @@ public class MyGlobals {
                             break;
                         case R.id.settings:
                             Toast.makeText(ctx, "Settings", Toast.LENGTH_SHORT).show();
-                            Intent intent2 = new Intent(ctx, SettingsActivity.class);
-                            activity.startActivity(intent2);
+                            Intent intent1 = new Intent(ctx, SettingsActivity.class);
+                            activity.startActivity(intent1);
                             break;
                         case R.id.create:
                             Toast.makeText(ctx, "Create Charity", Toast.LENGTH_SHORT).show();
-                            Intent intent1 = new Intent(ctx, CharityCreationActivity.class);
-                            activity.startActivity(intent1);
+                            Intent intent2 = new Intent(ctx, CharityCreationActivity.class);
+                            activity.startActivity(intent2);
                             break;
                         case R.id.map:
                             Toast.makeText(ctx, "Charities map", Toast.LENGTH_SHORT).show();
@@ -214,6 +220,11 @@ public class MyGlobals {
                         case R.id.qr:
                             Intent intent7 = new Intent(ctx, QRGenerateActivity.class);
                             activity.startActivity(intent7);
+                            break;
+                        case R.id.onboarding:
+                            Intent intent8 = new Intent(ctx, OnBoardingActivity.class);
+                            activity.startActivity(intent8);
+                            break;
                         default:
                             return true;
                     }
