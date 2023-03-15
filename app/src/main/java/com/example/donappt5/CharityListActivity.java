@@ -1,22 +1,13 @@
 package com.example.donappt5;
 
-import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.ImageSpan;
-import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -24,28 +15,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.donappt5.CharityDescriptionFragments.CharityDescFragment;
-import com.example.donappt5.CharityDescriptionFragments.CharityForumFragment;
-import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.PopupActivities.ActivityConfirm;
 import com.example.donappt5.PopupActivities.LocatorActivity;
 import com.example.donappt5.helpclasses.Charity;
 import com.example.donappt5.helpclasses.MyGlobals;
-//import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.wallet.PaymentsClient;
-import com.google.android.gms.wallet.Wallet;
-import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,38 +40,20 @@ import com.koalap.geofirestore.GeoFire;
 import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
 import com.koalap.geofirestore.GeoQueryEventListener;
-//import com.squareup.picasso.Picasso;
-//import com.stripe.Stripe;
 import com.stripe.android.PaymentConfiguration;
-import com.stripe.android.Stripe;
-import com.stripe.android.model.PaymentIntent;
-//import com.stripe.exception.StripeException;
-//import com.stripe.model.PaymentIntent;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.PagerTitleStrip;
 import androidx.viewpager.widget.ViewPager;
 
 import static java.lang.Math.min;
@@ -103,7 +67,6 @@ public class CharityListActivity extends AppCompatActivity {
     CharityAdapter charAdapter;
     Context ctx;
     private Toolbar mTopToolbar;
-    //private FirebaseAnalytics mFirebaseAnalytics;
     SwipeRefreshLayout pullToRefresh;
     DocumentSnapshot lastVisible;
     private int prelast;
@@ -144,6 +107,7 @@ public class CharityListActivity extends AppCompatActivity {
                 pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
                 pager.setAdapter(pagerAdapter);
                 pagerAdapter.notifyDataSetChanged();
+                changePageTitle(0);
                 pullToRefresh.setRefreshing(false);
             }
         });
@@ -160,13 +124,26 @@ public class CharityListActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
         pager = findViewById(R.id.cpOverview);
+        changePageTitle(0);
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                changePageTitle(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
-
-        PagerTitleStrip titleStrip = findViewById(R.id.ptsOverview);
-        titleStrip.setTextSize(COMPLEX_UNIT_DIP, 20);
 
         myGlobals = new MyGlobals(ctx);
         myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_charitylist));
@@ -195,16 +172,29 @@ public class CharityListActivity extends AppCompatActivity {
                 });
     }
 
-    private CharSequence relativeSizeSpan(CharSequence source, int pos) {
-        final SpannableString ss = new SpannableString(source);
-        if (pager.getCurrentItem() != pos) {
-            ss.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorSelectedTextHighlight)), 0, source.length(), 0);
-            ss.setSpan(new UnderlineSpan(), 0, source.length(), 0);
+    private void changePageTitle(int pos) {
+
+        View underlineAll = findViewById(R.id.underlineViewAll);
+        View underlineRecommended = findViewById(R.id.underlineViewRecommended);
+        TextView tvAll = findViewById(R.id.tvAll);
+        TextView tvRecommended = findViewById(R.id.tvRecommended);
+
+
+        if (pos == 0) {
+            tvAll.setTextColor(ContextCompat.getColor(this, R.color.colorSelectedTextHighlight));
+            underlineAll.setBackgroundColor(ContextCompat.getColor(this, R.color.colorSelectedTextHighlight));
+            underlineAll.setVisibility(View.VISIBLE);
+
+            tvRecommended.setTextColor(Color.BLACK);
+            underlineRecommended.setVisibility(View.GONE);
+        } else {
+            tvRecommended.setTextColor(ContextCompat.getColor(this, R.color.colorSelectedTextHighlight));
+            underlineRecommended.setBackgroundColor(ContextCompat.getColor(this, R.color.colorSelectedTextHighlight));
+            underlineRecommended.setVisibility(View.VISIBLE);
+
+            tvAll.setTextColor(Color.BLACK);
+            underlineAll.setVisibility(View.GONE);
         }
-        else {
-            ss.setSpan(new ForegroundColorSpan(Color.BLACK), 0, source.length(), 0);
-        }
-        return ss;
     }
 
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
@@ -222,20 +212,6 @@ public class CharityListActivity extends AppCompatActivity {
                     return CharityListFragment.newInstance();
                 default:
                     return CharityListFragment.newInstance();
-            }
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            Log.d("getPageTitle", "getPageTitle: positon = " + position);
-            switch (position) {
-                case 0:
-                    return relativeSizeSpan("Все организации", position);
-                case 1:
-                    return relativeSizeSpan("Рекомендации", position);
-                default:
-                    return "";
-
             }
         }
 
@@ -267,7 +243,6 @@ public class CharityListActivity extends AppCompatActivity {
                         }
                     }
                 });
-
     }
 
     @Override
@@ -392,11 +367,6 @@ public class CharityListActivity extends AppCompatActivity {
                 @Override
                 public void onKeyMoved(String key, GeoLocation location) {
                     Log.d("geoquery", "moveddoc:" + key);
-                    //if (!loadedchars.contains(key)) {
-                    //    loadedchars.add(key);
-                    //    MyClusterItem offsetItem = new MyClusterItem(location.latitude, location.longitude, key, "snippet");
-                    //    mClusterManager.addItem(offsetItem);
-                    //}
                 }
 
                 @Override
@@ -479,7 +449,6 @@ public class CharityListActivity extends AppCompatActivity {
                     });
         }
         charAdapter.notifyDataSetChanged();
-        //chars.add(new Charity(recievedCharities.elementAt(0).name, recievedCharities.elementAt(0).name, "wha?", -1, R.drawable.ic_launcher_foreground, -1));
     }
 
     void testUserHavingLocationsOfInterest() {
@@ -540,24 +509,6 @@ public class CharityListActivity extends AppCompatActivity {
                     }
                 });
 
-    }
-
-    public void onMyScroll(AbsListView lw, final int firstVisibleItem,
-                           final int visibleItemCount, final int totalItemCount) {
-        if (fillingmode == FILLING_FAVORITES) return;
-        switch (lw.getId()) {
-            case R.id.lvMain:
-                final int lastItem = firstVisibleItem + visibleItemCount;
-                if (lastItem == totalItemCount) {
-                    if (preLast != lastItem) {
-                        //to avoid multiple calls for last item
-                        Log.d("Last", "Last");
-                        preLast = lastItem;
-                        fillData();
-                        Log.d("georad", String.valueOf(fdistance));
-                    }
-                }
-        }
     }
 
     @Override
