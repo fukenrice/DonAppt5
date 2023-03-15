@@ -1,13 +1,22 @@
 package com.example.donappt5;
 
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -20,6 +29,9 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.example.donappt5.CharityDescriptionFragments.CharityDescFragment;
+import com.example.donappt5.CharityDescriptionFragments.CharityForumFragment;
+import com.example.donappt5.CharityDescriptionFragments.CharityGoalsFragment;
 import com.example.donappt5.PopupActivities.ActivityConfirm;
 import com.example.donappt5.PopupActivities.LocatorActivity;
 import com.example.donappt5.helpclasses.Charity;
@@ -68,9 +80,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.PagerTitleStrip;
+import androidx.viewpager.widget.ViewPager;
 
 import static java.lang.Math.min;
 
@@ -97,6 +117,8 @@ public class CharityListActivity extends AppCompatActivity {
     String queryInput;
     GeoQuery fillingQuery;
     String tag = "none";
+    ViewPager pager;
+    PagerAdapter pagerAdapter;
 
     /**
      * Called when the activity is first created.
@@ -114,19 +136,14 @@ public class CharityListActivity extends AppCompatActivity {
 
         handleIntent(getIntent());
 
+        // TODO: Разобраться с рефрешем
         pullToRefresh = findViewById(R.id.pullToRefresh);
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                fillingmode = FILLING_ALPHABET;
-                fdistance = 0;
-                fillingQuery = null;
-                charAdapter.objects = new ArrayList<Charity>();
-                charAdapter.notifyDataSetChanged();
-                queryInput = null;
-                lastVisible = null;
-                fillingData = false;
-                fillData();
+                pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+                pager.setAdapter(pagerAdapter);
+                pagerAdapter.notifyDataSetChanged();
                 pullToRefresh.setRefreshing(false);
             }
         });
@@ -138,46 +155,18 @@ public class CharityListActivity extends AppCompatActivity {
         Log.i("ProgressTracker", "position 3");
         // создаем адаптер
         charAdapter = new CharityAdapter(this, chars);
-        fillData();
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // настраиваем список
-        ListView lvMain = (ListView) findViewById(R.id.lvMain);
-        lvMain.setClickable(true);
-        lvMain.setAdapter(charAdapter);
-        lvMain.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
 
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                onMyScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
-            }
-        });
+        pager = findViewById(R.id.cpOverview);
+        pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+        pager.setAdapter(pagerAdapter);
 
-        lvMain.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Charity clickedCharity = charAdapter.getCharity(position);
-                Log.d("Click", "itemClick: position = " + position + ", id = "
-                        + id + ", name = " + clickedCharity.name + "url = " + clickedCharity.photourl + ", payment url = " + clickedCharity.paymentUrl);
-
-                Intent intent = new Intent(ctx, CharityActivity.class);
-                intent.putExtra("chname", clickedCharity.name);
-                intent.putExtra("bdesc", clickedCharity.briefDescription);
-                intent.putExtra("fdesc", clickedCharity.fullDescription);
-                intent.putExtra("trust", clickedCharity.trust);
-                intent.putExtra("image", clickedCharity.image);
-                intent.putExtra("id", clickedCharity.id);
-                intent.putExtra("url", clickedCharity.photourl);
-                intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
-                startActivity(intent);
-            }
-        });
+        PagerTitleStrip titleStrip = findViewById(R.id.ptsOverview);
+        titleStrip.setTextSize(COMPLEX_UNIT_DIP, 20);
 
         myGlobals = new MyGlobals(ctx);
         myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_charitylist));
@@ -204,45 +193,56 @@ public class CharityListActivity extends AppCompatActivity {
                         db.collection("users").document(user.getUid()).update(device_token);
                     }
                 });
-        MyTask mt = new MyTask();
-        mt.execute();
     }
 
-    class MyTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Log.d("AsyncTask", "Begin");
+    private CharSequence relativeSizeSpan(CharSequence source, int pos) {
+        final SpannableString ss = new SpannableString(source);
+        if (pager.getCurrentItem() != pos) {
+            ss.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorSelectedTextHighlight)), 0, source.length(), 0);
+            ss.setSpan(new UnderlineSpan(), 0, source.length(), 0);
         }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            testStripe();
-            return null;
+        else {
+            ss.setSpan(new ForegroundColorSpan(Color.BLACK), 0, source.length(), 0);
         }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            Log.d("AsyncTask", "End");
-        }
+        return ss;
     }
 
+    private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
-    void testStripe() {
+        public MyPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
 
-        //Log.d("stripe", Stripe.apiKey);
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("amount", 1000);
-        params.put("currency", "usd");
-        ArrayList paymentMethodTypes = new ArrayList();
-        paymentMethodTypes.add("card");
-        Log.d("stripe", "step 1");
-        params.put("payment_method_types", paymentMethodTypes);
-        params.put("receipt_email", "jenny.rosen@example.com");
+        @Override
+        public Fragment getItem(int pos) {
+            switch (pos) {
+                case 0:
+                    return CharityListFragment.newInstance();
+                case 1:
+                    return CharityListFragment.newInstance();
+                default:
+                    return CharityListFragment.newInstance();
+            }
+        }
 
+        @Override
+        public CharSequence getPageTitle(int position) {
+            Log.d("getPageTitle", "getPageTitle: positon = " + position);
+            switch (position) {
+                case 0:
+                    return relativeSizeSpan("Все организации", position);
+                case 1:
+                    return relativeSizeSpan("Рекомендации", position);
+                default:
+                    return "";
 
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
     }
 
     void doMySearch(String querys) {
