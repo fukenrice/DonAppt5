@@ -24,39 +24,61 @@
             android:theme="?attr/actionBarTheme"
             android:transitionName="actionBar" />
 
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/pullToRefresh"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
 
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/pullToRefresh"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
 
-                <ListView
-                    android:id="@+id/lvMain"
+
+                <TextView
+                    android:id="@+id/tvCharitiesLine"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-        </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:text="@string/charities_line"
+                    android:textColor="@android:color/black"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
 
+            <androidx.viewpager.widget.ViewPager
+                android:id="@+id/cpOverview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="8"
+                android:layout_marginTop="20dp">
+
+                <androidx.viewpager.widget.PagerTitleStrip
+                    android:id="@+id/ptsOverview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center" />
+            </androidx.viewpager.widget.ViewPager>
+
+
+        </LinearLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:fitsSystemWindows="true"
+        android:id="@+id/nv"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        app:menu="@menu/navigation_menu"
         android:layout_gravity="start"
+        android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
         app:itemTextColor="@color/md_black_1000"
-        android:id="@+id/nv">
+        app:menu="@menu/navigation_menu">
 
     </com.google.android.material.navigation.NavigationView>
-
 
 
 </androidx.drawerlayout.widget.DrawerLayout>

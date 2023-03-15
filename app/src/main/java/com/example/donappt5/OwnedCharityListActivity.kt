@@ -132,7 +132,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
         val taggedquery = db.collection("charities").whereEqualTo("creatorid", user?.uid);
         if (lastVisible != null && charAdapter.objects.size >= 20) {
             taggedquery
-                .startAfter(lastVisible)
+                .startAfter(lastVisible!!)
                 .limit(20)
                 .get()
                 .addOnSuccessListener(OnSuccessListener { documentSnapshots ->
