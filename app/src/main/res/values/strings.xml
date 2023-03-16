@@ -52,4 +52,8 @@
     <string name="edit_location">Edit Location</string>
     <string name="edit_tags">Edit tags</string>
     <string name="charities_line">Лента</string>
+    <string name="explore">explore</string>
+    <string name="map">map</string>
+    <string name="donations">donations</string>
+    <string name="profile">profile</string>
 </resources>

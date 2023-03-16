@@ -32,6 +32,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -64,8 +65,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 public class ProfileActivity extends AppCompatActivity {
     private DrawerLayout drawerlayout;
     private ActionBarDrawerToggle actionbartoggle;
-    private NavigationView navigationview;
-    private Toolbar mTopToolbar;
     Button btnLogOut;
     Context ctx;
     ImageView ivProfile;
@@ -88,11 +87,10 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.layout_profile);
         ctx = this;
         friends = new ArrayList<Friend>();
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
 
         myGlobals = new MyGlobals(ctx);
-        myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_layout_profile));
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView);
 
         btnChangeName = findViewById(R.id.btnChangeName);
         btnChangeName.setOnClickListener(view -> requestNameChange());

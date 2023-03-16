@@ -1,6 +1,5 @@
 package com.example.donappt5;
 
-
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,9 +11,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +23,7 @@ import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -41,14 +39,14 @@ import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
 import com.koalap.geofirestore.GeoQueryEventListener;
 import com.stripe.android.PaymentConfiguration;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -66,7 +64,7 @@ public class CharityListActivity extends AppCompatActivity {
     ArrayList<String> geochars = new ArrayList<String>();
     CharityAdapter charAdapter;
     Context ctx;
-    private Toolbar mTopToolbar;
+    //private FirebaseAnalytics mFirebaseAnalytics;
     SwipeRefreshLayout pullToRefresh;
     DocumentSnapshot lastVisible;
     private int prelast;
@@ -112,23 +110,17 @@ public class CharityListActivity extends AppCompatActivity {
         });
 
         Log.i("ProgressTracker", "position 1");
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         Log.i("ProgressTracker", "position 2");
-        setSupportActionBar(mTopToolbar);
+
         Log.i("ProgressTracker", "position 3");
         // создаем адаптер
         charAdapter = new CharityAdapter(this, chars);
-
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         pager = findViewById(R.id.cpOverview);
         changePageTitle(0);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
             }
 
             @Override
@@ -138,14 +130,15 @@ public class CharityListActivity extends AppCompatActivity {
 
             @Override
             public void onPageScrollStateChanged(int state) {
-
+                toggleRefreshing(state == ViewPager.SCROLL_STATE_IDLE);
             }
         });
         pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
 
         myGlobals = new MyGlobals(ctx);
-        myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_charitylist));
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView);
 
         testUserHavingLocationsOfInterest();
 
@@ -169,6 +162,12 @@ public class CharityListActivity extends AppCompatActivity {
                         db.collection("users").document(user.getUid()).update(device_token);
                     }
                 });
+    }
+
+    public void toggleRefreshing(boolean enabled) {
+        if (pullToRefresh != null) {
+            pullToRefresh.setEnabled(enabled);
+        }
     }
 
     private void changePageTitle(int pos) {
@@ -519,33 +518,6 @@ public class CharityListActivity extends AppCompatActivity {
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        switch (itemId) {
-            // Android home
-            case android.R.id.home:
-                myGlobals.drawerlayout.openDrawer(GravityCompat.START);
-                return true;      // manage other entries if you have it ...
-            case R.id.action_search:
-                Toast.makeText(CharityListActivity.this, "Menu action clicked", Toast.LENGTH_LONG).show();
-                //onSearchRequested();
-                return true;
-            case R.id.action_sortbydistance:
-                Toast.makeText(ctx, "feature not yet ready", Toast.LENGTH_SHORT).show();
-                break; //TODO sort by distance
-            //fillingmode = FILLING_DISTANCE;
-            //charAdapter.objects = new ArrayList<Charity>();
-            //charAdapter.notifyDataSetChanged();
-            //queryInput = null;
-            //lastVisible = null;
-            //fillingData = false;
-            //fillData();
-            //pullToRefresh.setRefreshing(false);
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

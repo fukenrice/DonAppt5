@@ -1,11 +1,13 @@
 package com.example.donappt5
 
 import android.app.SearchManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.SearchView
@@ -16,6 +18,7 @@ import com.example.donappt5.databinding.ActivityOwnedCharityListBinding
 import com.example.donappt5.helpclasses.Charity
 import com.example.donappt5.helpclasses.MyGlobals
 import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,13 +31,14 @@ class OwnedCharityListActivity : AppCompatActivity() {
     var lastVisible: DocumentSnapshot? = null
     private var preLast = 0
     var queryInput: String = ""
-    var myGlobals: MyGlobals? = null
+    lateinit var myGlobals: MyGlobals
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityOwnedCharityListBinding.inflate(layoutInflater)
         myGlobals = MyGlobals(this)
-        myGlobals!!.setupNavDrawer(this, this, binding.nv, binding.activityCharitylist)
+        val ctx: Context = this
+        myGlobals.setupBottomNavigation(ctx, this, binding.bottomNavigation)
         setupView()
     }
 
@@ -96,11 +100,6 @@ class OwnedCharityListActivity : AppCompatActivity() {
                 intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl)
                 startActivity(intent)
             }
-
-        setSupportActionBar(binding.myToolbar)
-
-        supportActionBar!!.setDisplayShowTitleEnabled(false)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
     }
 
 

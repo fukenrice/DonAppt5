@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/charitylist"
+        android:enabled="true"
+        android:icon="@drawable/item_selector_charities"
+        android:title="@string/explore"/>
+    <item
+        android:id="@+id/map"
+        android:enabled="true"
+        android:icon="@drawable/item_selector_map"
+        android:title="@string/map" />
+    <item
+        android:id="@+id/donations"
+        android:enabled="true"
+        android:icon="@drawable/item_selector_donations"
+        android:title="@string/donations" />
+    <item
+        android:id="@+id/profile"
+        android:enabled="true"
+        android:icon="@drawable/item_selector_user"
+        android:title="@string/profile"
+        />
+</menu>

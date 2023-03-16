@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.donappt5.helpclasses.MyGlobals;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -18,16 +19,13 @@ public class BrowseActivity extends AppCompatActivity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toolbar mTopToolbar;
         setContentView(R.layout.activity_browse);
         Log.d("progresstracker", "browseactivity");
         context = this;
 
-        myGlobals = new MyGlobals(context);
-        myGlobals.setupNavDrawer(context, this, findViewById(R.id.activity_browse));
-
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
+        myGlobals = new MyGlobals(context);;
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        myGlobals.setupBottomNavigation(context, this, bottomNavigationView);
 
         ConstraintLayout kids = findViewById(R.id.kids);
         ConstraintLayout poverty = findViewById(R.id.poverty);

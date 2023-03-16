@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -69,7 +70,6 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     Context context;
     HashSet<String> loadedchars;
     MyGlobals myGlobals;
-    Toolbar mTopToolbar;
 
     public void onCreate(Bundle savedInstanceState) {
         loadedchars = new HashSet<String>();
@@ -92,11 +92,10 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         mapView.getMapAsync(this);
         context = this;
 
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
 
         myGlobals = new MyGlobals(context);
-        myGlobals.setupNavDrawer(context, this, findViewById(R.id.activity_charitiesmap));
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        myGlobals.setupBottomNavigation(context, this, bottomNavigationView);
     }
 
     void setQuery() {

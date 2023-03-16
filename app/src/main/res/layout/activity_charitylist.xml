@@ -14,16 +14,6 @@
         android:layout_height="fill_parent"
         android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/my_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="10"
-            android:background="@color/toolbar_orange"
-            android:minHeight="?attr/actionBarSize"
-            android:theme="?attr/actionBarTheme"
-            android:transitionName="actionBar" />
-
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/pullToRefresh"
             android:layout_width="match_parent"
@@ -106,22 +96,15 @@
                 android:layout_marginTop="20dp">
             </androidx.viewpager.widget.ViewPager>
 
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:menu="@menu/bottom_navigation_menu" />
 
         </LinearLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
-
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nv"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_main"
-        app:itemTextColor="@color/md_black_1000"
-        app:menu="@menu/navigation_menu">
-
-    </com.google.android.material.navigation.NavigationView>
 
 
 </androidx.drawerlayout.widget.DrawerLayout>

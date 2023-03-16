@@ -23,6 +23,7 @@ import com.example.donappt5.helpclasses.MyGlobals;
 import com.example.donappt5.paymentsstuff.QiwiPaymentActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -60,7 +61,6 @@ public class CharityActivity extends AppCompatActivity {
      */
     ViewPager pager;
     PagerAdapter pagerAdapter;
-    private Toolbar mTopToolbar;
 
     private DrawerLayout drawerlayout;
     MyGlobals myGlobals;
@@ -72,9 +72,6 @@ public class CharityActivity extends AppCompatActivity {
         setContentView(R.layout.activity_charitydesc);
         Log.i("ActivityTrack", "entered charityactivity");
         Intent intent = getIntent();
-
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
 
         fragdesc = new CharityDescFragment();
         fraggoal = new CharityGoalsFragment();
@@ -143,7 +140,8 @@ public class CharityActivity extends AppCompatActivity {
         });//*/
 
         myGlobals = new MyGlobals(ctx);
-        myGlobals.setupNavDrawer(ctx, this, findViewById(R.id.activity_charitydesc));
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView);
         loadFavs();
         ivFavorite = findViewById(R.id.ivFavorite);
         ivFavorite.setOnClickListener(new View.OnClickListener() {

@@ -42,6 +42,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -126,8 +127,6 @@ public class CharityCreationActivity extends AppCompatActivity {
         Log.d("ActivityTracker", "entered CharityCreationActivity");
         etName = findViewById(R.id.etName);
         //TODO imageview
-        Toolbar mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
         imgChange = findViewById(R.id.ivChangeImage);
 
         btnCreate = findViewById(R.id.btnCreate);
@@ -165,7 +164,8 @@ public class CharityCreationActivity extends AppCompatActivity {
         });//*/
 
         myGlobals = new MyGlobals(context);
-        myGlobals.setupNavDrawer(context, this, findViewById(R.id.activity_charitycreation));
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        myGlobals.setupBottomNavigation(context, this, bottomNavigationView);
 
         imgbtnCheckName = findViewById(R.id.imgbtnNameCheck);
         imgbtnCheckName.setOnClickListener(new View.OnClickListener() {
