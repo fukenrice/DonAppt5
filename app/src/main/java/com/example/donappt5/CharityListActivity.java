@@ -80,6 +80,7 @@ public class CharityListActivity extends AppCompatActivity {
     String tag = "none";
     ViewPager pager;
     PagerAdapter pagerAdapter;
+    BottomNavigationView bottomNavigationView;
 
     /**
      * Called when the activity is first created.
@@ -137,7 +138,7 @@ public class CharityListActivity extends AppCompatActivity {
         pager.setAdapter(pagerAdapter);
 
         myGlobals = new MyGlobals(ctx);
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView);
 
         testUserHavingLocationsOfInterest();
@@ -378,6 +379,12 @@ public class CharityListActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        myGlobals.setSelectedItem(this, bottomNavigationView);
     }
 
     // генерируем данные для адаптера

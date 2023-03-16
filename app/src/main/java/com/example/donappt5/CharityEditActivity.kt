@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -23,7 +22,6 @@ import com.example.donappt5.PopupActivities.TagsActivity
 import com.example.donappt5.databinding.ActivityCharityeditBinding
 import com.example.donappt5.helpclasses.Charity
 import com.example.donappt5.helpclasses.MyGlobals
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -80,11 +78,16 @@ class CharityEditActivity : AppCompatActivity() {
         )
 
         var ctx: Context = this
-        var myGlobals = MyGlobals(this)
-        val bottomNavigationView = findViewById<View>(R.id.bottom_navigation) as BottomNavigationView
-        myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView)
         binding = ActivityCharityeditBinding.inflate(layoutInflater)
+        var myGlobals = MyGlobals(this)
+        myGlobals.setupBottomNavigation(ctx, this, binding.bottomNavigation)
         setupView(descChar)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        var myGlobals = MyGlobals(this)
+        myGlobals.setSelectedItem(this, binding.bottomNavigation)
     }
 
     private fun setupView(charity: Charity) {

@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.SearchView
@@ -18,7 +17,6 @@ import com.example.donappt5.databinding.ActivityOwnedCharityListBinding
 import com.example.donappt5.helpclasses.Charity
 import com.example.donappt5.helpclasses.MyGlobals
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,6 +45,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
         charAdapter.objects.clear()
         lastVisible = null
         fillAllData()
+        myGlobals.setSelectedItem(this, binding.bottomNavigation)
     }
 
     private fun setupView() {
@@ -205,6 +204,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
         }
         charAdapter.notifyDataSetChanged()
     }
+
 
     fun doMySearch(querys: String) {
         Log.d("searchfunction", "input = $querys")

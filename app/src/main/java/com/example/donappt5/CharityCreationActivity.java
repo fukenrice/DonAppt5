@@ -115,6 +115,7 @@ public class CharityCreationActivity extends AppCompatActivity {
     ImageView imgbtnCheckName;
     ImageView imgChange;
     MyGlobals myGlobals;
+    BottomNavigationView bottomNavigationView;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,7 +165,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         });//*/
 
         myGlobals = new MyGlobals(context);
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         myGlobals.setupBottomNavigation(context, this, bottomNavigationView);
 
         imgbtnCheckName = findViewById(R.id.imgbtnNameCheck);
@@ -203,6 +204,12 @@ public class CharityCreationActivity extends AppCompatActivity {
 
     void loadImage() {
         openImageChooser();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        myGlobals.setSelectedItem(this, bottomNavigationView);
     }
 
     void checkName() {

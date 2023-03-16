@@ -51,26 +51,15 @@ class MyGlobals     // constructor
         view: BottomNavigationView
     ) {
         view.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_UNLABELED;
-        
-        activity.overridePendingTransition(0,0);
 
-        view.selectedItemId = when(activity) {
-            is CharityListActivity -> { R.id.charitylist }
-            is BrowseActivity -> { R.id.charitylist }
-            is CharitiesMapActivity -> { R.id.map }
-            is CharityActivity -> { R.id.charitylist }
-            is CharityCreationActivity -> { R.id.donations }
-            is CharityEditActivity -> { R.id.donations }
-            is OwnedCharityListActivity -> { R.id.donations }
-            is ProfileActivity -> { R.id.profile }
-            is SettingsActivity -> { R.id.profile }
-            else -> R.id.charitylist
-        }
-        view.setOnNavigationItemSelectedListener { item ->
+        activity.overridePendingTransition(0,0)
+
+        setSelectedItem(activity, view)
+
+        view.setOnItemSelectedListener { item ->
             when(item.itemId) {
                 R.id.charitylist -> {
                     val intent5 = Intent(ctx, CharityListActivity::class.java)
-
                     activity.startActivity(intent5)
                     true
                 }
@@ -92,6 +81,22 @@ class MyGlobals     // constructor
                 else -> false
             }
         }
+    }
+
+    fun setSelectedItem(activity: Activity,
+        view: BottomNavigationView) {
+        view.menu.findItem(when(activity) {
+            is CharityListActivity -> { R.id.charitylist }
+            is BrowseActivity -> { R.id.charitylist }
+            is CharitiesMapActivity -> { R.id.map }
+            is CharityActivity -> { R.id.charitylist }
+            is CharityCreationActivity -> { R.id.donations }
+            is CharityEditActivity -> { R.id.donations }
+            is OwnedCharityListActivity -> { R.id.donations }
+            is ProfileActivity -> { R.id.profile }
+            is SettingsActivity -> { R.id.profile }
+            else -> R.id.charitylist
+        }).isChecked = true
     }
 
     /* handle the result */

@@ -39,6 +39,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -70,6 +71,7 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     Context context;
     HashSet<String> loadedchars;
     MyGlobals myGlobals;
+    BottomNavigationView bottomNavigationView;
 
     public void onCreate(Bundle savedInstanceState) {
         loadedchars = new HashSet<String>();
@@ -94,7 +96,7 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
 
 
         myGlobals = new MyGlobals(context);
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         myGlobals.setupBottomNavigation(context, this, bottomNavigationView);
     }
 
@@ -284,7 +286,6 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     Charity clickedCharity;
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
         googleMap.setMinZoomPreference(5);
         LatLng ny = new LatLng(latitude, longitude);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ny, 10));
@@ -295,6 +296,8 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         gmap = googleMap;
         googleMap.setMinZoomPreference(5);
         gmap.getUiSettings().setZoomControlsEnabled(true);
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(
+                        this, R.raw.map_style));
         gmap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
@@ -369,7 +372,9 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         super.onResume();
         getLastLocation();
         mapView.onResume();
+        myGlobals.setSelectedItem(this, bottomNavigationView);
     }
+
 
     @Override
     protected void onStart() {

@@ -81,6 +81,7 @@ public class ProfileActivity extends AppCompatActivity {
     Button btnFavs;
     TextView tvUserName;
     Button btnChangeName;
+    BottomNavigationView bottomNavigationView;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +90,7 @@ public class ProfileActivity extends AppCompatActivity {
         friends = new ArrayList<Friend>();
 
         myGlobals = new MyGlobals(ctx);
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView);
 
         btnChangeName = findViewById(R.id.btnChangeName);
@@ -152,6 +153,12 @@ public class ProfileActivity extends AppCompatActivity {
         btnFavs.setOnClickListener(v -> onFavsClick());
 //read_custom_friendlists
         manageFriendsListView();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        myGlobals.setSelectedItem(this, bottomNavigationView);
     }
 
     void requestNameChange() {

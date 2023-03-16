@@ -65,6 +65,7 @@ public class CharityActivity extends AppCompatActivity {
     private DrawerLayout drawerlayout;
     MyGlobals myGlobals;
     Button btnDonate;
+    BottomNavigationView bottomNavigationView;
 
     public void onCreate(Bundle savedInstanceState) {
         ctx = this;
@@ -140,7 +141,7 @@ public class CharityActivity extends AppCompatActivity {
         });//*/
 
         myGlobals = new MyGlobals(ctx);
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         myGlobals.setupBottomNavigation(ctx, this, bottomNavigationView);
         loadFavs();
         ivFavorite = findViewById(R.id.ivFavorite);
@@ -150,6 +151,12 @@ public class CharityActivity extends AppCompatActivity {
                 onFavoriteClick();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        myGlobals.setSelectedItem(this, bottomNavigationView);
     }
 
     void loadFavs() {

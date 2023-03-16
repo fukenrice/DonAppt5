@@ -16,6 +16,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 public class BrowseActivity extends AppCompatActivity {
     MyGlobals myGlobals;
     Context context;
+    BottomNavigationView bottomNavigationView;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +25,7 @@ public class BrowseActivity extends AppCompatActivity {
         context = this;
 
         myGlobals = new MyGlobals(context);;
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
         myGlobals.setupBottomNavigation(context, this, bottomNavigationView);
 
         ConstraintLayout kids = findViewById(R.id.kids);
@@ -90,5 +91,11 @@ public class BrowseActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        myGlobals.setSelectedItem(this, bottomNavigationView);
     }
 }

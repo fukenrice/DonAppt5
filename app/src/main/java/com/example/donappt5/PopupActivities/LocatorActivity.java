@@ -254,6 +254,7 @@ public class LocatorActivity extends AppCompatActivity implements OnMapReadyCall
                 mLocation.setPosition(point);
             }
         });
+
         googleMap.setMinZoomPreference(5);
     }
 
