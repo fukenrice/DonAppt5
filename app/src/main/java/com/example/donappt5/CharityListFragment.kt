@@ -79,11 +79,11 @@ class CharityListFragment : Fragment() {
                     // Refresh only when scrolled to the top
                     val refreshLayout = activity?.findViewById<SwipeRefreshLayout>(R.id.pullToRefresh)
                     val topRowVerticalPosition =
-                        if (view == null || view.getChildCount() === 0) 0 else lvMain.getChildAt(
+                        if (view.getChildCount() === 0) 0 else lvMain.getChildAt(
                             0
                         ).getTop()
                     if (refreshLayout != null) {
-                        refreshLayout.setEnabled(topRowVerticalPosition >= 0)
+                        refreshLayout.setEnabled(topRowVerticalPosition == 0)
                     }
                 }
             })
