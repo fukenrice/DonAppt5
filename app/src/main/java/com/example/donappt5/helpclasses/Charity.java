@@ -2,13 +2,13 @@
 package com.example.donappt5.helpclasses;
 
 public class Charity {
+    public int id;
     public String name; //TODO change to setters and getters
     public String briefDescription;
     public String fullDescription;
     public float trust;
     public int image;
     public String photourl;
-    public int id;
     public String paymentUrl;
 
 

@@ -32,8 +32,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.koalap.geofirestore.GeoFire;
 import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
@@ -143,16 +142,16 @@ public class CharityListActivity extends AppCompatActivity {
 
         testUserHavingLocationsOfInterest();
 
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
                     @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                    public void onComplete(@NonNull Task<String> task) {
                         if (!task.isSuccessful()) {
                             Log.w("gettingdevicetoken", "getInstanceId failed", task.getException());
                             return;
                         }
                         // Get new Instance ID token
-                        String token = task.getResult().getToken();
+                        String token = task.getResult();
 
                         Log.d("gettingdevicetokem", token);
                         FirebaseFirestore db = FirebaseFirestore.getInstance();

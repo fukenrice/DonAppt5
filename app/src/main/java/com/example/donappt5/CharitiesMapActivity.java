@@ -26,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.donappt5.helpclasses.Charity;
 import com.example.donappt5.helpclasses.MyClusterItem;
+import com.example.donappt5.helpclasses.MyClusterRenderer;
 import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -107,7 +108,6 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
 
         Log.d("geoquery", "Am I even here?2");
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
-
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
                 System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
@@ -286,7 +286,6 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     Charity clickedCharity;
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        googleMap.setMinZoomPreference(5);
         LatLng ny = new LatLng(latitude, longitude);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ny, 10));
         mLocation = googleMap.addMarker(new MarkerOptions().position(ny).title("Marker"));
@@ -294,67 +293,59 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         mLocation.setZIndex(1000);
         //mLocation.set
         gmap = googleMap;
-        googleMap.setMinZoomPreference(5);
         gmap.getUiSettings().setZoomControlsEnabled(true);
+
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.map_style));
-        gmap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                LatLng latLng = gmap.getCameraPosition().target;
-                double metersPerPx = 1/getPixelsPerMeter(latLng.latitude, gmap.getCameraPosition().zoom);
-                LinearLayout wtflayout = findViewById(R.id.wtflayout);
-                double width = wtflayout.getWidth();
-                double height = wtflayout.getHeight();
 
-                geoQuery.setLocation(new GeoLocation(latLng.latitude, latLng.longitude),
-                        sqrt(width*width + height*height) * metersPerPx/1000);
-                //drawCircle(new LatLng(latitude, longitude), width/2 * metersPerPx);
-            }
+        gmap.setOnCameraMoveListener(() -> {
+            LatLng latLng = gmap.getCameraPosition().target;
+            double metersPerPx = 1/getPixelsPerMeter(latLng.latitude, gmap.getCameraPosition().zoom);
+            LinearLayout wtflayout = findViewById(R.id.wtflayout);
+            double width = wtflayout.getWidth();
+            double height = wtflayout.getHeight();
+
+            geoQuery.setLocation(new GeoLocation(latLng.latitude, latLng.longitude),
+                    sqrt(width*width + height*height) * metersPerPx/1000);
         });
 
         mClusterManager = new ClusterManager<MyClusterItem>(this, gmap);
+        mClusterManager.setRenderer(new MyClusterRenderer(this, gmap,
+                mClusterManager));
         gmap.setOnCameraIdleListener(mClusterManager);
         gmap.setOnMarkerClickListener(mClusterManager);
-        //mClusterManager.setAnimation(true);
-        mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<MyClusterItem>() {
-            @Override
-            public void onClusterItemInfoWindowClick(MyClusterItem item) {
-                String name = item.getTitle();
 
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                DocumentReference docRef = db.collection("charities").document(item.getTitle());
-                docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                clickedCharity = new Charity();
-                                Log.d("Reading", "DocumentSnapshot data: " + document.getData());
-                                clickedCharity.name = item.getTitle();
-                                clickedCharity.fullDescription = (String)document.get("description");
-                                clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
-                                clickedCharity.photourl = (String)document.get("photourl");
-                                clickedCharity.paymentUrl = document.getString("qiwiurl");
 
-                                Intent intent = new Intent(context, CharityActivity.class);
-                                intent.putExtra("chname", clickedCharity.name);
-                                intent.putExtra("bdesc", clickedCharity.briefDescription);
-                                intent.putExtra("fdesc", clickedCharity.fullDescription);
-                                intent.putExtra   ("url", clickedCharity.photourl);
-                                intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
-                                startActivity(intent);
+        mClusterManager.setOnClusterItemInfoWindowClickListener(item -> {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            DocumentReference docRef = db.collection("charities").document(item.getTitle());
+            docRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        clickedCharity = new Charity();
+                        Log.d("Reading", "DocumentSnapshot data: " + document.getData());
+                        clickedCharity.name = item.getTitle();
+                        clickedCharity.fullDescription = (String)document.get("description");
+                        clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
+                        clickedCharity.photourl = (String)document.get("photourl");
+                        clickedCharity.paymentUrl = document.getString("qiwiurl");
 
-                            } else {
-                                Log.d("Reading", "No such document");
-                            }
-                        } else {
-                            Log.d("Reading", "get failed with ", task.getException());
-                        }
+                        Intent intent = new Intent(context, CharityActivity.class);
+                        intent.putExtra("chname", clickedCharity.name);
+                        intent.putExtra("bdesc", clickedCharity.briefDescription);
+                        intent.putExtra("fdesc", clickedCharity.fullDescription);
+                        intent.putExtra   ("url", clickedCharity.photourl);
+                        intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
+                        startActivity(intent);
+
+                    } else {
+                        Log.d("Reading", "No such document");
                     }
-                });
-            }
+                } else {
+                    Log.d("Reading", "get failed with ", task.getException());
+                }
+            });
         });
     }
 

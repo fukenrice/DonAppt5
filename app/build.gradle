@@ -7,14 +7,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "com.example.donappt5"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -53,7 +53,12 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     def nav_version = '2.3.0-alpha04'
 
+    implementation platform('com.google.firebase:firebase-bom:31.2.3')
+    implementation 'com.google.firebase:firebase-ml-modeldownloader'
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+
     implementation 'com.google.firebase:firebase-analytics:17.5.0'
+    implementation 'com.google.firebase:firebase-messaging:23.1.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
@@ -84,16 +89,15 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.2'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
     implementation 'com.firebase:geofire-java:3.0.0'
-    implementation 'com.google.firebase:firebase-messaging:20.2.4'
     implementation 'com.koalap:geofirestore-android:1.1.0'
     implementation 'com.google.firebase:firebase-core:17.5.0'
     implementation 'com.google.maps.android:android-maps-utils:1.2.1'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
-    implementation 'com.android.support:design:30.0.0'
-    implementation 'com.android.support:support-v4:30.0.0'
-    implementation 'com.android.support:appcompat-v7:30.0.0'
+    implementation 'com.android.support:design:31.0.0'
+    implementation 'com.android.support:support-v4:31.0.0'
+    implementation 'com.android.support:appcompat-v7:31.0.0'
     implementation 'com.facebook.android:facebook-android-sdk:6.3.0'
 
 

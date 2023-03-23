@@ -88,10 +88,6 @@
             android:value="@string/google_maps_key" />
 
         <activity android:name=".CharityListActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -105,10 +101,10 @@
         <activity
             android:name=".PopupActivities.ActivityConfirm"
             android:theme="@style/AppTheme.PopUpWindowStyle" />
-        <activity android:name=".AuthenticationActivity">
+        <activity android:name=".AuthenticationActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
