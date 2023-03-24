@@ -24,6 +24,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -81,6 +82,7 @@ public class CharityListActivity extends AppCompatActivity {
     ViewPager pager;
     PagerAdapter pagerAdapter;
     BottomNavigationView bottomNavigationView;
+    FloatingActionButton fab;
 
     /**
      * Called when the activity is first created.
@@ -98,7 +100,6 @@ public class CharityListActivity extends AppCompatActivity {
 
         handleIntent(getIntent());
 
-        // TODO: Разобраться с рефрешем
         pullToRefresh = findViewById(R.id.pullToRefresh);
         pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -110,10 +111,15 @@ public class CharityListActivity extends AppCompatActivity {
             }
         });
 
-        Log.i("ProgressTracker", "position 1");
-        Log.i("ProgressTracker", "position 2");
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ctx, CharityCreationActivity.class);
+                startActivity(intent);
+            }
+        });
 
-        Log.i("ProgressTracker", "position 3");
         // создаем адаптер
         charAdapter = new CharityAdapter(this, chars);
 
