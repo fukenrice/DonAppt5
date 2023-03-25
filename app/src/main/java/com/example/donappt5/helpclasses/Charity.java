@@ -3,6 +3,7 @@ package com.example.donappt5.helpclasses;
 
 public class Charity {
     public String name; //TODO change to setters and getters
+    public String firestoreID;
     public String briefDescription;
     public String fullDescription;
     public float trust;
@@ -12,7 +13,8 @@ public class Charity {
     public String paymentUrl;
 
 
-    public Charity(String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl) {
+    public Charity(String gfirestoreID, String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl) {
+        this.firestoreID = gfirestoreID;
         this.name = gname;
         this.briefDescription = gbdesc;
         this.fullDescription = gfdesc;
@@ -23,7 +25,8 @@ public class Charity {
         this.paymentUrl = null;
     }
 
-    public Charity(String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl, String paymentUrl) {
+    public Charity(String gfirestoreID, String gname, String gbdesc, String gfdesc, float gtrust, int gim, int gid, String gphotourl, String paymentUrl) {
+        this.firestoreID = gfirestoreID;
         this.name = gname;
         this.briefDescription = gbdesc;
         this.fullDescription = gfdesc;

@@ -24,8 +24,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.stripe.android.ApiResultCallback;
 import com.stripe.android.PaymentConfiguration;
 import com.stripe.android.PaymentIntentResult;
@@ -285,12 +283,12 @@ public class CardSubmitActivity extends AppCompatActivity {
                 // Payment completed successfully
                 //Toast.makeText(ctx, "Payment completed", Toast.LENGTH_LONG).show();
                 Log.d("Stripe async", "payment succeded");
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                /*Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 activity.displayAlert(
                         "Payment completed",
                         gson.toJson(paymentIntent),
                         true
-                );
+                );//*/
             } else if (status == PaymentIntent.Status.RequiresPaymentMethod) {
                 // Payment failed
                 Log.d("Stripe async", "payment failed");

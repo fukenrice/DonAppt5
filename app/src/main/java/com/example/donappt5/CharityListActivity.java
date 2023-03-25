@@ -32,8 +32,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.koalap.geofirestore.GeoFire;
 import com.koalap.geofirestore.GeoLocation;
 import com.koalap.geofirestore.GeoQuery;
@@ -143,25 +142,22 @@ public class CharityListActivity extends AppCompatActivity {
 
         testUserHavingLocationsOfInterest();
 
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w("gettingdevicetoken", "getInstanceId failed", task.getException());
-                            return;
-                        }
-                        // Get new Instance ID token
-                        String token = task.getResult().getToken();
-
-                        Log.d("gettingdevicetokem", token);
-                        FirebaseFirestore db = FirebaseFirestore.getInstance();
-                        Map<String, Object> device_token = new HashMap<String, Object>();
-
-                        device_token.put("device_token", token);
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                        db.collection("users").document(user.getUid()).update(device_token);
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("gettingdevicetoken", "getInstanceId failed", task.getException());
+                        return;
                     }
+                    // Get new Instance ID token
+                    String token = task.getResult();
+
+                    Log.d("gettingdevicetokem", token);
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    Map<String, Object> device_token = new HashMap<String, Object>();
+
+                    device_token.put("device_token", token);
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    db.collection("users").document(user.getUid()).update(device_token);
                 });
     }
 
@@ -237,7 +233,7 @@ public class CharityListActivity extends AppCompatActivity {
                             String url = document.getString("photourl");
                             String qiwiPaymentUrl = document.getString("qiwiurl");
                             Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
-                            charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                            charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
                             charAdapter.notifyDataSetChanged();
                         }
                     }
@@ -307,7 +303,7 @@ public class CharityListActivity extends AppCompatActivity {
                             String url = document.getString("photourl");
                             String qiwiPaymentUrl = document.getString("qiwiurl");
                             Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
-                            charAdapter.objects.add(new Charity(name, (desc == null) ? "" : desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                            charAdapter.objects.add(new Charity(document.getId(), name, (desc == null) ? "" : desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
                             charAdapter.notifyDataSetChanged();
                             i++;
                         }
@@ -337,7 +333,8 @@ public class CharityListActivity extends AppCompatActivity {
                         FirebaseFirestore.getInstance().collection("charities").document(key).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                enteredCharity.name = key;
+                                enteredCharity.firestoreID = documentSnapshot.getId();
+                                enteredCharity.name = (String) documentSnapshot.get("name");
                                 enteredCharity.fullDescription = (String) documentSnapshot.get("description");
                                 enteredCharity.briefDescription = enteredCharity.fullDescription.substring(0, min(enteredCharity.fullDescription.length(), 50));
                                 enteredCharity.photourl = (String) documentSnapshot.get("photourl");
@@ -420,7 +417,7 @@ public class CharityListActivity extends AppCompatActivity {
                                 String url = document.getString("photourl");
                                 String qiwiPaymentUrl = document.getString("qiwiurl");
                                 Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url + " " + qiwiPaymentUrl);
-                                charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                                charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
                                 charAdapter.notifyDataSetChanged();
                                 i++;
                             }
@@ -445,7 +442,7 @@ public class CharityListActivity extends AppCompatActivity {
                                 String url = document.getString("photourl");
                                 String qiwiPaymentUrl = document.getString("qiwiurl");
                                 Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url + " " + qiwiPaymentUrl);
-                                charAdapter.objects.add(new Charity(name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                                charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
                                 charAdapter.notifyDataSetChanged();
                                 i++;
                             }

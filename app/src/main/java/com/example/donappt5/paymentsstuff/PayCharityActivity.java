@@ -24,8 +24,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.stripe.android.ApiResultCallback;
 import com.stripe.android.PaymentConfiguration;
 import com.stripe.android.PaymentIntentResult;
@@ -55,12 +53,6 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
-
 
 
 public class PayCharityActivity extends AppCompatActivity {
@@ -252,6 +244,7 @@ public class PayCharityActivity extends AppCompatActivity {
         protected String doInBackground(String... uri) {
             //Toast.makeText(ctx, "request begin", Toast.LENGTH_SHORT).show();
             Log.e("stripeasync", "started");
+            /*
             HttpClient httpclient = new DefaultHttpClient();
             HttpResponse response;
             String responseString = null;
@@ -276,6 +269,8 @@ public class PayCharityActivity extends AppCompatActivity {
             }
             Log.d("stripeasync", "responseString " + responseString);
             return responseString;
+            //*/
+            return "";
         }
 
         @Override
@@ -313,12 +308,12 @@ public class PayCharityActivity extends AppCompatActivity {
                 // Payment completed successfully
                 //Toast.makeText(ctx, "Payment completed", Toast.LENGTH_LONG).show();
                 Log.d("Stripe async", "payment succeded");
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                /*Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 activity.displayAlert(
                         "Payment completed",
                         gson.toJson(paymentIntent),
                         true
-                );
+                );//*/
             } else if (status == PaymentIntent.Status.RequiresPaymentMethod) {
                 // Payment failed
                 Log.d("Stripe async", "payment failed");

@@ -31,6 +31,7 @@ public class CharityDescFragment extends Fragment {
 
         CharityDescFragment f = new CharityDescFragment();
         Bundle b = new Bundle();
+        b.putString("firestoreID", given.firestoreID);
         b.putString("name", given.name);
         b.putString("bdesc", given.briefDescription);
         b.putString("fdesc", given.fullDescription);

@@ -96,6 +96,7 @@ class CharityListFragment : Fragment() {
                                 + id + ", name = " + clickedCharity.name + "url = " + clickedCharity.photourl + ", payment url = " + clickedCharity.paymentUrl
                     )
                     val intent = Intent(context, CharityActivity::class.java)
+                    intent.putExtra("firestoreID", clickedCharity.firestoreID);
                     intent.putExtra("chname", clickedCharity.name)
                     intent.putExtra("bdesc", clickedCharity.briefDescription)
                     intent.putExtra("fdesc", clickedCharity.fullDescription)
@@ -179,6 +180,7 @@ class CharityListFragment : Fragment() {
                         )
                         adapter.objects.add(
                             Charity(
+                                document.id,
                                 name,
                                 desc!!.substring(0, Math.min(desc.length, 50)),
                                 desc,
@@ -212,10 +214,11 @@ class CharityListFragment : Fragment() {
                         val qiwiPaymentUrl = document.getString("qiwiurl")
                         Log.d(
                             "CharitylistLog",
-                            "recieved: $name $desc $url $qiwiPaymentUrl"
+                            "recieved: ${document.id} $name $desc $url $qiwiPaymentUrl"
                         )
                         adapter.objects.add(
                             Charity(
+                                document.id,
                                 name,
                                 desc!!.substring(0, Math.min(desc.length, 50)),
                                 desc,

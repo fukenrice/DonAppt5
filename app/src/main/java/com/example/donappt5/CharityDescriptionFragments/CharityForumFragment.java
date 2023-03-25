@@ -107,13 +107,13 @@ public class CharityForumFragment extends Fragment {
         msgmap.put("userid", user.getUid());
         msgmap.put("username", user.getDisplayName());
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("charities").document(dchar.name).collection("forum").document(msgid).set(msgmap);
+        db.collection("charities").document(dchar.firestoreID).collection("forum").document(msgid).set(msgmap);
         etMessage.setText("");
     }
 
     void loadMessages() { //TODO add pagination, why not?
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("charities").document(dchar.name).collection("forum").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        db.collection("charities").document(dchar.firestoreID).collection("forum").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot document : task.getResult()) {
@@ -137,6 +137,7 @@ public class CharityForumFragment extends Fragment {
         CharityForumFragment f = new CharityForumFragment();
         dchar = given;
         Bundle b = new Bundle();
+        b.putString("firestoreID", given.firestoreID);
         b.putString("name", given.name);
         b.putString("bdesc", given.briefDescription);
         b.putString("fdesc", given.fullDescription);

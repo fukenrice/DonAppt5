@@ -38,6 +38,7 @@ import com.example.donappt5.PopupActivities.TagsActivity;
 import com.example.donappt5.helpclasses.Charity;
 //import com.firebase.geofire.GeoFire;
 import com.example.donappt5.helpclasses.MyGlobals;
+import com.example.donappt5.helpclasses.Util;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -52,6 +53,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -326,16 +330,30 @@ public class CharityCreationActivity extends AppCompatActivity {
             }).start();
         }
     }
+
     void createCharity() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("charities")
+                .whereEqualTo("name", etName.getText().toString()).get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        createCharityWithID(task.getResult().getDocuments().get(0).getId());
+                    } else {
+                        createCharityWithID(Util.getRandomString(28));
+                    }
+                });
+    }
+
+    void createCharityWithID(String id) {
         Log.d("progresstracker", "createCharity");
         creatingChar = new Charity();
         creatingChar.name = etName.getText().toString();
+        creatingChar.firestoreID = id;
         creatingChar.fullDescription = fragdesc.getText();
         creatingChar.paymentUrl = fragcred.getText();
         creatingChar.briefDescription = creatingChar.fullDescription.substring(0, min(creatingChar.fullDescription.length(), 50));
         // Access a Cloud Firestore instance from your Activity
-        final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
         final Map<String, Object> charity = new HashMap<>();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         charity.put("name", creatingChar.name);
@@ -351,7 +369,7 @@ public class CharityCreationActivity extends AppCompatActivity {
 
             Uri file = loadedUri;//Uri.fromFile(new File(pathtoimage));
 
-            StorageReference imgsref = storageRef.child("charities"+creatingChar.name+"/photo");
+            StorageReference imgsref = storageRef.child("charities"+creatingChar.firestoreID+"/photo");
             UploadTask uploadTask = imgsref.putFile(file);
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -365,21 +383,21 @@ public class CharityCreationActivity extends AppCompatActivity {
                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                     // ...
                     Log.d("storageprogresstracker", "1");
-                    storageRef.child("charities"+creatingChar.name+"/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    storageRef.child("charities"+creatingChar.firestoreID+"/photo").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
                             // Got the download URL for 'users/me/profile.png'
                             Log.d("urlgetter", uri.toString());
                             fileUrl = uri.toString();
                             charity.put("photourl", fileUrl);
-                            db.collection("charities").document(creatingChar.name)
+                            db.collection("charities").document(creatingChar.firestoreID)
                                     .set(charity).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    putGeoQuery();
-                                    putTags();
-                                }
-                            });
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            putGeoQuery();
+                                            putTags();
+                                        }
+                                    });
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -394,7 +412,7 @@ public class CharityCreationActivity extends AppCompatActivity {
             //Log.d("urlgetter", fileUrl);
         } else {
             Log.d("storageprogresstracker", "3");
-            db.collection("charities").document(creatingChar.name)
+            db.collection("charities").document(creatingChar.firestoreID)
                     .set(charity)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -418,31 +436,31 @@ public class CharityCreationActivity extends AppCompatActivity {
         Map<String, Object> namemap = new HashMap<String, Object>();
         Map<String, Object> tagsmap = new HashMap<String, Object>();
         if (ctags[cart]) {
-            db.collection("tags").document("art").collection("list").document(creatingChar.name).set(namemap);
+            db.collection("tags").document("art").collection("list").document(creatingChar.firestoreID).set(namemap);
             tagsmap.put("art", true);
         } else tagsmap.put("art", false);
         if (ctags[cpov]) {
-            db.collection("tags").document("poverty").collection("list").document(creatingChar.name).set(namemap);
+            db.collection("tags").document("poverty").collection("list").document(creatingChar.firestoreID).set(namemap);
             tagsmap.put("poverty", true);
         } else tagsmap.put("poverty", false);
         if (ctags[cedu]) {
-            db.collection("tags").document("education").collection("list").document(creatingChar.name).set(namemap);
+            db.collection("tags").document("education").collection("list").document(creatingChar.firestoreID).set(namemap);
             tagsmap.put("education", true);
         } else tagsmap.put("education", false);
         if (ctags[csci]) {
-            db.collection("tags").document("science&research").collection("list").document(creatingChar.name).set(namemap);
+            db.collection("tags").document("science&research").collection("list").document(creatingChar.firestoreID).set(namemap);
             tagsmap.put("science&research", true);
         } else tagsmap.put("science&research", false);
         if (ctags[ckids]) {
-            db.collection("tags").document("children").collection("list").document(creatingChar.name).set(namemap);
+            db.collection("tags").document("children").collection("list").document(creatingChar.firestoreID).set(namemap);
             tagsmap.put("children", true);
         } else tagsmap.put("children", false);
         if (ctags[cheal]) {
-            db.collection("tags").document("healthcare").collection("list").document(creatingChar.name).set(namemap);
+            db.collection("tags").document("healthcare").collection("list").document(creatingChar.firestoreID).set(namemap);
             tagsmap.put("healthcare", true);
         } else tagsmap.put("healthcare", false);
 
-        db.collection("charities").document(creatingChar.name).update(tagsmap);
+        db.collection("charities").document(creatingChar.firestoreID).update(tagsmap);
     }
 
     void putGeoQuery() {
@@ -453,20 +471,20 @@ public class CharityCreationActivity extends AppCompatActivity {
             location.put("longitude", longitude);
 
             Log.d("geoquery", "Am I even here?4");
-            db.collection("charities").document(creatingChar.name).collection("locations").document("FirstLocation").set(location)
+            db.collection("charities").document(creatingChar.firestoreID).collection("locations").document("FirstLocation").set(location)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d("geoquery", "Am I even here?3");
-                            CollectionReference colref = FirebaseFirestore.getInstance().collection("charities").document(creatingChar.name).collection("locations");
+                            CollectionReference colref = FirebaseFirestore.getInstance().collection("charities").document(creatingChar.firestoreID).collection("locations");
                             GeoFire geoFirestore = new GeoFire(colref);
                             geoFirestore.setLocation("FirstLocation", new GeoLocation(latitude, longitude));
 
                             CollectionReference colref2 = FirebaseFirestore.getInstance().collection("charitylocations");
                             Map<String, Object> creatingdoc = new HashMap<>();
-                            colref2.document(creatingChar.name).set(creatingdoc);
+                            colref2.document(creatingChar.firestoreID).set(creatingdoc);
                             GeoFire geoFirestore2 = new GeoFire(colref2);
-                            geoFirestore2.setLocation(creatingChar.name, new GeoLocation(latitude, longitude));
+                            geoFirestore2.setLocation(creatingChar.firestoreID, new GeoLocation(latitude, longitude));
 
                             Log.d("geoquery", "Am I even here?1");
                             CollectionReference ref = FirebaseFirestore.getInstance().collection("userlocations");
@@ -481,12 +499,12 @@ public class CharityCreationActivity extends AppCompatActivity {
                                     Log.d("geoquery", "entereddoc:" + key);
 
                                     HashMap<String, Object> notification = new HashMap<String, Object>();
-                                    notification.put("notificationMessage", creatingChar.name);
+                                    notification.put("notificationMessage", creatingChar.firestoreID);
                                     notification.put("notificationTitle", "new charity created nearby");
 
                                     FirebaseFirestore.getInstance().collection("users")
                                             .document(key).collection("Notifications")
-                                            .document(creatingChar.name).set(notification);
+                                            .document(creatingChar.firestoreID).set(notification);
 
                                 }
 
@@ -496,12 +514,12 @@ public class CharityCreationActivity extends AppCompatActivity {
                                     Log.d("geoquery", "exiteddoc:" + key);
 
                                     HashMap<String, Object> notification = new HashMap<String, Object>();
-                                    notification.put("notificationMessage", creatingChar.name);
+                                    notification.put("notificationMessage", creatingChar.firestoreID);
                                     notification.put("notificationTitle", "new charity created nearby");
 
                                     FirebaseFirestore.getInstance().collection("users")
                                             .document(key).collection("Notifications")
-                                            .document(creatingChar.name).set(notification);
+                                            .document(creatingChar.firestoreID).set(notification);
                                 }
 
                                 @Override

@@ -332,6 +332,7 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
                             if (document.exists()) {
                                 clickedCharity = new Charity();
                                 Log.d("Reading", "DocumentSnapshot data: " + document.getData());
+                                clickedCharity.firestoreID = document.getId();
                                 clickedCharity.name = item.getTitle();
                                 clickedCharity.fullDescription = (String)document.get("description");
                                 clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
@@ -339,6 +340,7 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
                                 clickedCharity.paymentUrl = document.getString("qiwiurl");
 
                                 Intent intent = new Intent(context, CharityActivity.class);
+                                intent.putExtra("firestoreID", clickedCharity.firestoreID);
                                 intent.putExtra("chname", clickedCharity.name);
                                 intent.putExtra("bdesc", clickedCharity.briefDescription);
                                 intent.putExtra("fdesc", clickedCharity.fullDescription);

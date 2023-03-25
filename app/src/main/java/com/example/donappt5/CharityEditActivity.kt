@@ -22,8 +22,11 @@ import com.example.donappt5.PopupActivities.TagsActivity
 import com.example.donappt5.databinding.ActivityCharityeditBinding
 import com.example.donappt5.helpclasses.Charity
 import com.example.donappt5.helpclasses.MyGlobals
+import com.example.donappt5.helpclasses.Util
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.koalap.geofirestore.GeoFire
 import com.koalap.geofirestore.GeoLocation
@@ -67,6 +70,7 @@ class CharityEditActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         descChar = Charity(
+            intent.getStringExtra("firestoreID"),
             intent.getStringExtra("chname"),
             intent.getStringExtra("bdesc"),
             intent.getStringExtra("fdesc"),
@@ -95,7 +99,7 @@ class CharityEditActivity : AppCompatActivity() {
         setContentView(view)
 
         fragDesc = CharityCreateDesc.newInstance(charity.fullDescription)
-        fragCredentials = CharityCreatePaymentCredentials.newInstance(charity.paymentUrl)
+        fragCredentials = CharityCreatePaymentCredentials.newInstance(charity.paymentUrl?: "")
 
         binding.apply {
             ivChangeImage.setImageResource(R.drawable.ic_sync)
@@ -244,7 +248,7 @@ class CharityEditActivity : AppCompatActivity() {
 
     private fun deleteOrganization() {
         val db = FirebaseFirestore.getInstance()
-        db.collection("charities").document(descChar.name).delete()
+        db.collection("charities").document(descChar.firestoreID).delete()
         finish()
     }
 
@@ -254,10 +258,9 @@ class CharityEditActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmChanges() {
-        Log.d("progresstracker", "createCharity")
-
+    private fun createCharityWithID(id: String) {
         var creatingChar = Charity()
+        creatingChar.firestoreID = id
         creatingChar.name = binding.etName.getText().toString()
         creatingChar.fullDescription = fragDesc.getText()
         creatingChar.paymentUrl = fragCredentials.getText()
@@ -269,12 +272,6 @@ class CharityEditActivity : AppCompatActivity() {
         charity["description"] = creatingChar.fullDescription
         charity["qiwiurl"] = creatingChar.paymentUrl
         charity["creatorid"] = user!!.uid
-        if (creatingChar.name == descChar.name) {
-
-        } else {
-
-        }
-
 
         Log.d("storageprogresstracker", "-1")
         if (imageUri != null) {
@@ -282,7 +279,7 @@ class CharityEditActivity : AppCompatActivity() {
             val storage = FirebaseStorage.getInstance()
             val storageRef = storage.reference
             val file = loadedUri!! //Uri.fromFile(new File(pathtoimage));
-            val imgsref = storageRef.child("charities" + creatingChar.name + "/photo")
+            val imgsref = storageRef.child("charities" + creatingChar.firestoreID + "/photo")
             // TODO: Чистить папку перед добавлением фото(а может все само работает???)
 
             val uploadTask = imgsref.putFile(file)
@@ -292,11 +289,11 @@ class CharityEditActivity : AppCompatActivity() {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                 // ...
                 Log.d("storageprogresstracker", "1")
-                storageRef.child("charities" + creatingChar.name + "/photo").downloadUrl.addOnSuccessListener { uri -> // Got the download URL for 'users/me/profile.png'
+                storageRef.child("charities" + creatingChar.firestoreID + "/photo").downloadUrl.addOnSuccessListener { uri -> // Got the download URL for 'users/me/profile.png'
                     Log.d("urlgetter", uri.toString())
                     fileUrl = uri.toString()
                     charity["photourl"] = fileUrl!!
-                    db.collection("charities").document(descChar.name)
+                    db.collection("charities").document(descChar.firestoreID)
                         .set(charity).addOnSuccessListener {
                             Toast.makeText(
                                 this,
@@ -306,12 +303,12 @@ class CharityEditActivity : AppCompatActivity() {
                             finish()
                         }
 
-                    db.collection("charities").document(descChar.name).get()
+                    db.collection("charities").document(descChar.firestoreID).get()
                         .addOnSuccessListener { documentSnapshot ->
 
                             val data = documentSnapshot.data?.putAll(charity)
                             if (data != null) {
-                                db.collection("charities").document(creatingChar.name).set(data).addOnSuccessListener {
+                                db.collection("charities").document(creatingChar.firestoreID).set(data).addOnSuccessListener {
                                     Toast.makeText(
                                         this,
                                         "Information was successfully edited",
@@ -320,7 +317,7 @@ class CharityEditActivity : AppCompatActivity() {
                                 }
                             }
                             if (charity["name"] != descChar.name) {
-                                db.collection("charities").document(descChar.name).delete()
+                                db.collection("charities").document(descChar.firestoreID).delete()
                             }
                             finish()
                         }
@@ -331,7 +328,7 @@ class CharityEditActivity : AppCompatActivity() {
         } else {
             Log.d("storageprogresstracker", "3")
 
-            db.collection("charities").document(descChar.name).get()
+            db.collection("charities").document(descChar.firestoreID).get()
                 .addOnSuccessListener { documentSnapshot ->
                     val data = documentSnapshot.data
                     if (data != null) {
@@ -340,7 +337,7 @@ class CharityEditActivity : AppCompatActivity() {
                     Log.d("mytag", documentSnapshot.data.toString())
 
                     if (data != null) {
-                        db.collection("charities").document(creatingChar.name).set(data).addOnSuccessListener {
+                        db.collection("charities").document(creatingChar.firestoreID).set(data).addOnSuccessListener {
                             Toast.makeText(
                                 this,
                                 "Information was successfully edited",
@@ -355,11 +352,26 @@ class CharityEditActivity : AppCompatActivity() {
                         }
                     }
                     if (charity["name"] != descChar.name) {
-                        db.collection("charities").document(descChar.name).delete()
+                        db.collection("charities").document(descChar.firestoreID).delete()
                     }
                     finish()
                 }
         }
+    }
+
+    private fun confirmChanges() {
+        Log.d("progresstracker", "createCharity")
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("charities")
+            .whereEqualTo("name", binding.etName.getText().toString()).get()
+            .addOnCompleteListener { task: Task<QuerySnapshot> ->
+                if (task.isSuccessful) {
+                    createCharityWithID(task.result.documents[0].id)
+                } else {
+                    createCharityWithID(Util.getRandomString(28))
+                }
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -431,13 +443,13 @@ class CharityEditActivity : AppCompatActivity() {
             location["latitude"] = latitude
             location["longitude"] = longitude
             Log.d("geoquery", "Am I even here?4")
-            db.collection("charities").document(descChar.name).collection("locations")
+            db.collection("charities").document(descChar.firestoreID).collection("locations")
                 .document("FirstLocation").set(location)
                 .addOnSuccessListener {
                     Log.d("geoquery", "Am I even here?3")
                     val colref =
                         FirebaseFirestore.getInstance().collection("charities")
-                            .document(descChar.name)
+                            .document(descChar.firestoreID)
                             .collection("locations")
                     val geoFirestore = GeoFire(colref)
                     geoFirestore.setLocation(
@@ -447,10 +459,10 @@ class CharityEditActivity : AppCompatActivity() {
                     val colref2 = FirebaseFirestore.getInstance().collection("charitylocations")
                     val creatingdoc: Map<String, Any> =
                         java.util.HashMap()
-                    colref2.document(descChar.name).set(creatingdoc)
+                    colref2.document(descChar.firestoreID).set(creatingdoc)
                     val geoFirestore2 = GeoFire(colref2)
                     geoFirestore2.setLocation(
-                        descChar.name,
+                        descChar.firestoreID,
                         GeoLocation(latitude, longitude)
                     )
                     Log.d("geoquery", "Am I even here?1")
@@ -483,7 +495,7 @@ class CharityEditActivity : AppCompatActivity() {
                             notification["notificationTitle"] = "new charity created nearby"
                             FirebaseFirestore.getInstance().collection("users")
                                 .document(key).collection("Notifications")
-                                .document(descChar.name).set(notification)
+                                .document(descChar.firestoreID).set(notification)
                         }
 
                         override fun onKeyExited(key: String) {
@@ -494,7 +506,7 @@ class CharityEditActivity : AppCompatActivity() {
                             notification["notificationTitle"] = "new charity created nearby"
                             FirebaseFirestore.getInstance().collection("users")
                                 .document(key).collection("Notifications")
-                                .document(descChar.name).set(notification)
+                                .document(descChar.firestoreID).set(notification)
                         }
 
                         override fun onKeyMoved(
@@ -521,35 +533,35 @@ class CharityEditActivity : AppCompatActivity() {
         val namemap: Map<String, Any> = java.util.HashMap()
         val tagsmap: MutableMap<String, Any> = java.util.HashMap()
         if (ctags["cart"] == true) {
-            db.collection("tags").document("art").collection("list").document(descChar.name)
+            db.collection("tags").document("art").collection("list").document(descChar.firestoreID)
                 .set(namemap)
             tagsmap["art"] = true
         } else tagsmap["art"] = false
         if (ctags["cpov"] == true) {
-            db.collection("tags").document("poverty").collection("list").document(descChar.name)
+            db.collection("tags").document("poverty").collection("list").document(descChar.firestoreID)
                 .set(namemap)
             tagsmap["poverty"] = true
         } else tagsmap["poverty"] = false
         if (ctags["cedu"] == true) {
             db.collection("tags").document("education").collection("list")
-                .document(descChar.name).set(namemap)
+                .document(descChar.firestoreID).set(namemap)
             tagsmap["education"] = true
         } else tagsmap["education"] = false
         if (ctags["csci"] == true) {
             db.collection("tags").document("science&research").collection("list")
-                .document(descChar.name).set(namemap)
+                .document(descChar.firestoreID).set(namemap)
             tagsmap["science&research"] = true
         } else tagsmap["science&research"] = false
         if (ctags["ckids"] == true) {
             db.collection("tags").document("children").collection("list")
-                .document(descChar.name).set(namemap)
+                .document(descChar.firestoreID).set(namemap)
             tagsmap["children"] = true
         } else tagsmap["children"] = false
         if (ctags["cheal"] == true) {
             db.collection("tags").document("healthcare").collection("list")
-                .document(descChar.name).set(namemap)
+                .document(descChar.firestoreID).set(namemap)
             tagsmap["healthcare"] = true
         } else tagsmap["healthcare"] = false
-        db.collection("charities").document(descChar.name).update(tagsmap)
+        db.collection("charities").document(descChar.firestoreID).update(tagsmap)
     }
 }

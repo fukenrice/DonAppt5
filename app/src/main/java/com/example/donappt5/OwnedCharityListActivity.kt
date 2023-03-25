@@ -89,6 +89,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                             + id + ", name = " + clickedCharity.name + "url = " + clickedCharity.photourl + ", payment url = " + clickedCharity.paymentUrl
                 )
                 val intent = Intent(this, CharityEditActivity::class.java)
+                intent.putExtra("firestoreID", clickedCharity.firestoreID)
                 intent.putExtra("chname", clickedCharity.name)
                 intent.putExtra("bdesc", clickedCharity.briefDescription)
                 intent.putExtra("fdesc", clickedCharity.fullDescription)
@@ -139,6 +140,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                     lastVisible = documentSnapshots.documents[documentSnapshots.size() - 1]
                     for (document in documentSnapshots) {
                         Log.d("CharitylistLog", document.id + " => " + document.data)
+                        val firestoreID = document.id
                         val name = document.getString("name")
                         val desc = document.getString("description")
                         val url = document.getString("photourl")
@@ -149,6 +151,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                         )
                         charAdapter.objects.add(
                             Charity(
+                                firestoreID,
                                 name,
                                 desc!!.substring(0, Math.min(desc.length, 50)),
                                 desc,
@@ -176,6 +179,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                     lastVisible = documentSnapshots.documents[documentSnapshots.size() - 1]
                     for (document in documentSnapshots) {
                         Log.d("CharitylistLog", document.id + " => " + document.data)
+                        val firestoreID = document.id
                         val name = document.getString("name")
                         val desc = document.getString("description")
                         val url = document.getString("photourl")
@@ -186,6 +190,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                         )
                         charAdapter.objects.add(
                             Charity(
+                                firestoreID,
                                 name,
                                 desc!!.substring(0, Math.min(desc.length, 50)),
                                 desc,
@@ -216,6 +221,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                 for (document in documentSnapshots) {
                     ++i
                     Log.d("CharitylistLog", document.id + " => " + document.data)
+                    val firestoreID = document.id
                     val name = document.getString("name")
                     val desc = document.getString("description")
                     val url = document.getString("photourl")
@@ -223,6 +229,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
                     Log.d("CharitylistLog", "recieved: $name $desc $url")
                     charAdapter.objects.add(
                         Charity(
+                            firestoreID,
                             name,
                             desc!!.substring(0, Math.min(desc.length, 50)),
                             desc,
