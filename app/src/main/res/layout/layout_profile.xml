@@ -33,7 +33,8 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <ImageView
+                    <com.google.android.material.imageview.ShapeableImageView
+                        app:shapeAppearanceOverlay="@style/circleImageView"
                         android:id="@+id/ivProfilePhoto"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
