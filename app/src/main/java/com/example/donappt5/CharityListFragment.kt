@@ -72,7 +72,7 @@ class CharityListFragment : Fragment() {
                             0
                         ).getTop()
                     if (refreshLayout != null) {
-                        refreshLayout.setEnabled(topRowVerticalPosition == 0)
+                        refreshLayout.isEnabled = topRowVerticalPosition == 0
                     }
                 }
             })

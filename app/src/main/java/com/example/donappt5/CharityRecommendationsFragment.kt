@@ -46,6 +46,7 @@ class CharityRecommendationsFragment : Fragment() {
     }
 
     private fun setupView() {
+
         adapter = CharityAdapter(context, chars)
         binding.apply {
             lvMain.isClickable = true
@@ -69,6 +70,20 @@ class CharityRecommendationsFragment : Fragment() {
                     intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl)
                     startActivity(intent)
                 }
+            lvMain.setOnScrollListener(object : AbsListView.OnScrollListener {
+                override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {}
+                override fun onScroll(
+                    view: AbsListView,
+                    firstVisibleItem: Int,
+                    visibleItemCount: Int,
+                    totalItemCount: Int
+                ) {
+                    val refreshLayout =
+                        activity?.findViewById<SwipeRefreshLayout>(R.id.pullToRefresh)
+                    refreshLayout?.isEnabled = false
+
+                }
+            })
         }
         fillData()
     }

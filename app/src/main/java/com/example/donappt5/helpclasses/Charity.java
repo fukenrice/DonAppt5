@@ -52,7 +52,11 @@ public class Charity {
         firestoreID = document.getId();
         name = document.getString("name");
         fullDescription = document.getString("description");
-        briefDescription = fullDescription.substring(0, Math.min(fullDescription.length(), 50));
+        if (fullDescription == null) {
+            briefDescription = null;
+        } else {
+            briefDescription = fullDescription.substring(0, Math.min(fullDescription.length(), 50));
+        }
         photourl = document.getString("photourl");
         paymentUrl = document.getString("qiwiurl");
         image = R.drawable.ic_launcher_foreground;
