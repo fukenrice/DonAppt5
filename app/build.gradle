@@ -59,6 +59,15 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation platform('com.google.firebase:firebase-bom:31.2.3')
+    implementation 'com.google.firebase:firebase-ml-modeldownloader'
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+
+    implementation 'com.google.firebase:firebase-analytics:17.5.0'
+    implementation 'com.google.firebase:firebase-messaging:23.1.2'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'com.google.android.gms:play-services-places:17.0.0'
     implementation 'com.google.android.gms:play-services-wallet:19.1.0'
     implementation "com.stripe:stripe-android:15.1.0"
@@ -88,7 +97,7 @@ dependencies {
     implementation 'com.firebase:geofire-java:3.0.0'
     implementation 'com.google.firebase:firebase-messaging:23.1.2'
     implementation 'com.koalap:geofirestore-android:1.1.0'
-    implementation 'com.google.firebase:firebase-core:21.1.1'
+    implementation 'com.google.firebase:firebase-core:17.5.0'
     implementation 'com.google.maps.android:android-maps-utils:1.2.1'
     implementation 'com.google.firebase:firebase-analytics-ktx:21.2.0'
 

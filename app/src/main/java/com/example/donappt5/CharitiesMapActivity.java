@@ -26,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.donappt5.helpclasses.Charity;
 import com.example.donappt5.helpclasses.MyClusterItem;
+import com.example.donappt5.helpclasses.MyClusterRenderer;
 import com.example.donappt5.helpclasses.MyGlobals;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -107,7 +108,6 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
 
         Log.d("geoquery", "Am I even here?2");
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
-
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
                 System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
@@ -286,7 +286,6 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
     Charity clickedCharity;
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        googleMap.setMinZoomPreference(5);
         LatLng ny = new LatLng(latitude, longitude);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ny, 10));
         mLocation = googleMap.addMarker(new MarkerOptions().position(ny).title("Marker"));
@@ -294,26 +293,25 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         mLocation.setZIndex(1000);
         //mLocation.set
         gmap = googleMap;
-        googleMap.setMinZoomPreference(5);
         gmap.getUiSettings().setZoomControlsEnabled(true);
+
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.map_style));
-        gmap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                LatLng latLng = gmap.getCameraPosition().target;
-                double metersPerPx = 1/getPixelsPerMeter(latLng.latitude, gmap.getCameraPosition().zoom);
-                LinearLayout wtflayout = findViewById(R.id.wtflayout);
-                double width = wtflayout.getWidth();
-                double height = wtflayout.getHeight();
 
-                geoQuery.setLocation(new GeoLocation(latLng.latitude, latLng.longitude),
-                        sqrt(width*width + height*height) * metersPerPx/1000);
-                //drawCircle(new LatLng(latitude, longitude), width/2 * metersPerPx);
-            }
+        gmap.setOnCameraMoveListener(() -> {
+            LatLng latLng = gmap.getCameraPosition().target;
+            double metersPerPx = 1/getPixelsPerMeter(latLng.latitude, gmap.getCameraPosition().zoom);
+            LinearLayout wtflayout = findViewById(R.id.wtflayout);
+            double width = wtflayout.getWidth();
+            double height = wtflayout.getHeight();
+
+            geoQuery.setLocation(new GeoLocation(latLng.latitude, latLng.longitude),
+                    sqrt(width*width + height*height) * metersPerPx/1000);
         });
 
         mClusterManager = new ClusterManager<MyClusterItem>(this, gmap);
+        mClusterManager.setRenderer(new MyClusterRenderer(this, gmap,
+                mClusterManager));
         gmap.setOnCameraIdleListener(mClusterManager);
         gmap.setOnMarkerClickListener(mClusterManager);
         //mClusterManager.setAnimation(true);
@@ -348,15 +346,13 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
                                 intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
                                 startActivity(intent);
 
-                            } else {
-                                Log.d("Reading", "No such document");
-                            }
-                        } else {
-                            Log.d("Reading", "get failed with ", task.getException());
-                        }
+                    } else {
+                        Log.d("Reading", "No such document");
                     }
-                });
-            }
+                } else {
+                    Log.d("Reading", "get failed with ", task.getException());
+                }
+            });
         });
     }
 
