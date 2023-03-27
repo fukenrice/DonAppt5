@@ -9,19 +9,17 @@ import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.donappt5.databinding.FragmentCharityListBinding
 import com.example.donappt5.helpclasses.Charity
+import com.example.donappt5.helpclasses.recommendations.ModelConfig
+import com.example.donappt5.helpclasses.recommendations.RecommendationClient
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass.
@@ -29,64 +27,29 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class CharityRecommendationsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
     private lateinit var binding: FragmentCharityListBinding
     private lateinit var adapter: CharityAdapter
     var chars = ArrayList<Charity>()
-    var fillingmode = 0
-    private var preLast = 0
-    var fillingData = false
-    var lastVisible: DocumentSnapshot? = null
-    var currentTag = "none"
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var config = ModelConfig()
+    private lateinit var client: RecommendationClient
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
+        Log.d("CharityRecommendationsFragment", "entered")
         // Inflate the layout for this fragment
         binding = FragmentCharityListBinding.inflate(inflater, container, false)
-        val view = binding.root
         setupView()
+        val view = binding.root
         return view
     }
 
     private fun setupView() {
         adapter = CharityAdapter(context, chars)
         binding.apply {
-
             lvMain.isClickable = true
             lvMain.adapter = adapter
-            lvMain.setOnScrollListener(object : AbsListView.OnScrollListener {
-                override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {}
-                override fun onScroll(
-                    view: AbsListView,
-                    firstVisibleItem: Int,
-                    visibleItemCount: Int,
-                    totalItemCount: Int
-                ) {
-                    onMyScroll(view, firstVisibleItem, visibleItemCount, totalItemCount)
-
-                    // Refresh only when scrolled to the top
-                    val refreshLayout = activity?.findViewById<SwipeRefreshLayout>(R.id.pullToRefresh)
-                    val topRowVerticalPosition =
-                        if (view == null || view.getChildCount() === 0) 0 else lvMain.getChildAt(
-                            0
-                        ).getTop()
-                    if (refreshLayout != null) {
-                        refreshLayout.setEnabled(topRowVerticalPosition >= 0)
-                    }
-                }
-            })
 
             lvMain.onItemClickListener =
                 OnItemClickListener { parent, view, position, id ->
@@ -110,136 +73,35 @@ class CharityRecommendationsFragment : Fragment() {
         fillData()
     }
 
-
-    private fun onMyScroll(
-        lw: AbsListView, firstVisibleItem: Int,
-        visibleItemCount: Int, totalItemCount: Int
-    ) {
-        if (fillingmode == CharityListActivity.FILLING_FAVORITES) return
-        when (lw.id) {
-            R.id.lvMain -> {
-                val lastItem = firstVisibleItem + visibleItemCount
-                if (lastItem == totalItemCount) {
-                    if (preLast != lastItem) {
-                        //to avoid multiple calls for last item
-                        Log.d("Last", "Last")
-                        preLast = lastItem
-                        fillData()
-//                        Log.d("georad", fdistance.toString())
+    fun fillData() {
+        client = RecommendationClient(requireContext(), config)
+        lifecycleScope.launch {
+            client.load {
+                lifecycleScope.launch {
+                    val db = FirebaseFirestore.getInstance()
+                    var results = client.recommend()
+                    results.forEach {
+                        db.collection("charities").document(it.id).get().addOnSuccessListener { doc ->
+                            adapter.objects.add(Charity(doc))
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
             }
         }
     }
 
-    fun fillData() {
-        Log.d("fillingmode", fillingmode.toString())
-        if (fillingmode == CharityListActivity.FILLING_ALPHABET) {
-            fillAllData()
-        } else if (fillingmode == CharityListActivity.FILLING_SEARCH) {
-            return
-        } else if (fillingmode == CharityListActivity.FILLING_DISTANCE) {
-//            fillDistanceData()
-        } else if (fillingmode == CharityListActivity.FILLING_FAVORITES) {
-//            fillFavoritesData()
+    override fun onStop() {
+        lifecycleScope.launch {
+            client.unload()
         }
-    }
-
-
-    fun fillAllData() {
-        Log.d("listfrag", "filling started")
-        if (fillingData) return
-        fillingData = true
-        val db = FirebaseFirestore.getInstance()
-        var taggedquery: Query
-        taggedquery = if (currentTag !== "none") {
-            db.collection("charities").whereEqualTo(currentTag, true)
-        } else {
-            db.collection("charities")
-        }
-
-        if (lastVisible != null && adapter.objects.size >= 20) {
-            taggedquery
-                .startAfter(lastVisible!!)
-                .limit(20)
-                .get()
-                .addOnSuccessListener(OnSuccessListener { documentSnapshots ->
-                    var i = 0
-                    if (documentSnapshots.size() == 0) return@OnSuccessListener
-                    lastVisible = documentSnapshots.documents[documentSnapshots.size() - 1]
-                    for (document in documentSnapshots) {
-                        Log.d("CharitylistLog", document.id + " => " + document.data)
-                        val name = document.getString("name")
-                        val desc = document.getString("description")
-                        val url = document.getString("photourl")
-                        val qiwiPaymentUrl = document.getString("qiwiurl")
-                        Log.d(
-                            "CharitylistLog",
-                            "recieved: $name $desc $url $qiwiPaymentUrl"
-                        )
-                        adapter.objects.add(
-                            Charity(
-                                name,
-                                desc!!.substring(0, Math.min(desc.length, 50)),
-                                desc,
-                                -1f,
-                                R.drawable.ic_launcher_foreground,
-                                i,
-                                url,
-                                qiwiPaymentUrl
-                            )
-                        )
-                        adapter.notifyDataSetChanged()
-                        i++
-                    }
-                    fillingData = false
-                }) //*/
-        } else {
-            taggedquery
-                .limit(20)
-                .get()
-                .addOnSuccessListener { documentSnapshots ->
-                    var i = 0
-                    if (documentSnapshots.size() == 0) {
-                        return@addOnSuccessListener
-                    }
-                    lastVisible = documentSnapshots.documents[documentSnapshots.size() - 1]
-                    for (document in documentSnapshots) {
-                        Log.d("CharitylistLog", document.id + " => " + document.data)
-                        val name = document.getString("name")
-                        val desc = document.getString("description")
-                        val url = document.getString("photourl")
-                        val qiwiPaymentUrl = document.getString("qiwiurl")
-                        Log.d(
-                            "CharitylistLog",
-                            "recieved: $name $desc $url $qiwiPaymentUrl"
-                        )
-                        adapter.objects.add(
-                            Charity(
-                                name,
-                                desc!!.substring(0, Math.min(desc.length, 50)),
-                                desc,
-                                -1f,
-                                R.drawable.ic_launcher_foreground,
-                                i,
-                                url,
-                                qiwiPaymentUrl
-                            )
-                        )
-                        adapter.notifyDataSetChanged()
-                        i++
-                    }
-                    fillingData = false
-                }
-        }
-        adapter.notifyDataSetChanged()
-        Log.d("listfrag", adapter.objects.size.toString())
+        super.onStop()
     }
 
     companion object {
         @JvmStatic
         fun newInstance() =
-            CharityListFragment().apply {
+            CharityRecommendationsFragment().apply {
             }
     }
 }

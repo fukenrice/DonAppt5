@@ -35,9 +35,9 @@ class ModelConfig {
     companion object {
         private const val DEFAULT_LOCAL_MODEL_PATH = "recommendation_cnn_i10o100.tflite"
         private const val DEFAULT_MOVIE_LIST_PATH = "sorted_movie_vocab.json"
-        private const val REMOTE_MODEL_NAME = "recommendations"
-        private const val DEFAULT_INPUT_LENGTH = 10
-        private const val DEFAULT_OUTPUT_LENGTH = 100
+        private const val REMOTE_MODEL_NAME = "recommender_model"
+        private const val DEFAULT_INPUT_LENGTH = 1
+        private const val DEFAULT_OUTPUT_LENGTH = 10
         private const val DEFAULT_TOP_K = 10
         private const val PAD_ID = 0
         private const val DEFAULT_OUTPUT_IDS_INDEX = 1

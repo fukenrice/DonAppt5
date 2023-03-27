@@ -315,37 +315,30 @@ public class CharitiesMapActivity extends AppCompatActivity implements OnMapRead
         gmap.setOnCameraIdleListener(mClusterManager);
         gmap.setOnMarkerClickListener(mClusterManager);
         //mClusterManager.setAnimation(true);
-        mClusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<MyClusterItem>() {
-            @Override
-            public void onClusterItemInfoWindowClick(MyClusterItem item) {
-                String name = item.getTitle();
+        mClusterManager.setOnClusterItemInfoWindowClickListener(item -> {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            DocumentReference docRef = db.collection("charities").document(item.getTitle());
+            docRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        clickedCharity = new Charity();
+                        Log.d("Reading", "DocumentSnapshot data: " + document.getData());
+                        clickedCharity.firestoreID = document.getId();
+                        clickedCharity.name = item.getTitle();
+                        clickedCharity.fullDescription = (String) document.get("description");
+                        clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
+                        clickedCharity.photourl = (String) document.get("photourl");
+                        clickedCharity.paymentUrl = document.getString("qiwiurl");
 
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                DocumentReference docRef = db.collection("charities").document(item.getTitle());
-                docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                clickedCharity = new Charity();
-                                Log.d("Reading", "DocumentSnapshot data: " + document.getData());
-                                clickedCharity.firestoreID = document.getId();
-                                clickedCharity.name = item.getTitle();
-                                clickedCharity.fullDescription = (String)document.get("description");
-                                clickedCharity.briefDescription = clickedCharity.fullDescription.substring(0, min(clickedCharity.fullDescription.length(), 50));
-                                clickedCharity.photourl = (String)document.get("photourl");
-                                clickedCharity.paymentUrl = document.getString("qiwiurl");
-
-                                Intent intent = new Intent(context, CharityActivity.class);
-                                intent.putExtra("firestoreID", clickedCharity.firestoreID);
-                                intent.putExtra("chname", clickedCharity.name);
-                                intent.putExtra("bdesc", clickedCharity.briefDescription);
-                                intent.putExtra("fdesc", clickedCharity.fullDescription);
-                                intent.putExtra   ("url", clickedCharity.photourl);
-                                intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
-                                startActivity(intent);
-
+                        Intent intent = new Intent(context, CharityActivity.class);
+                        intent.putExtra("firestoreID", clickedCharity.firestoreID);
+                        intent.putExtra("chname", clickedCharity.name);
+                        intent.putExtra("bdesc", clickedCharity.briefDescription);
+                        intent.putExtra("fdesc", clickedCharity.fullDescription);
+                        intent.putExtra("url", clickedCharity.photourl);
+                        intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl);
+                        startActivity(intent);
                     } else {
                         Log.d("Reading", "No such document");
                     }

@@ -20,9 +20,7 @@ import com.example.donappt5.PopupActivities.ActivityConfirm;
 import com.example.donappt5.PopupActivities.LocatorActivity;
 import com.example.donappt5.helpclasses.Charity;
 import com.example.donappt5.helpclasses.MyGlobals;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -100,14 +98,13 @@ public class CharityListActivity extends AppCompatActivity {
         handleIntent(getIntent());
 
         pullToRefresh = findViewById(R.id.pullToRefresh);
-        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
-                pager.setAdapter(pagerAdapter);
-                pagerAdapter.notifyDataSetChanged();
-                pullToRefresh.setRefreshing(false);
-            }
+        pullToRefresh.setOnRefreshListener(() -> {
+            int selectedItem = pager.getCurrentItem();
+            pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+            pager.setAdapter(pagerAdapter);
+            pager.setCurrentItem(selectedItem);
+            pagerAdapter.notifyDataSetChanged();
+            pullToRefresh.setRefreshing(false);
         });
 
         fab = findViewById(R.id.fab);
@@ -174,7 +171,6 @@ public class CharityListActivity extends AppCompatActivity {
     }
 
     private void changePageTitle(int pos) {
-
         View underlineAll = findViewById(R.id.underlineViewAll);
         View underlineRecommended = findViewById(R.id.underlineViewRecommended);
         TextView tvAll = findViewById(R.id.tvAll);
@@ -207,10 +203,8 @@ public class CharityListActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int pos) {
             switch (pos) {
-                case 0:
-                    return CharityListFragment.newInstance();
                 case 1:
-                    return CharityListFragment.newInstance();
+                    return CharityRecommendationsFragment.newInstance();
                 default:
                     return CharityListFragment.newInstance();
             }
@@ -296,25 +290,22 @@ public class CharityListActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         db.collection("users").document(user.getUid()).collection("favorites")
                 .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot documentSnapshots) {
-                        int i = 0;
-                        if (documentSnapshots.size() == 0) return;
+                .addOnSuccessListener(documentSnapshots -> {
+                    int i = 0;
+                    if (documentSnapshots.size() == 0) return;
 
-                        for (QueryDocumentSnapshot document : documentSnapshots) {
-                            Log.d("CharitylistLog", document.getId() + " => " + document.getData());
-                            String name = document.getString("name");
-                            String desc = document.getString("description");
-                            String url = document.getString("photourl");
-                            String qiwiPaymentUrl = document.getString("qiwiurl");
-                            Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
-                            charAdapter.objects.add(new Charity(document.getId(), name, (desc == null) ? "" : desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
-                            charAdapter.notifyDataSetChanged();
-                            i++;
-                        }
-                        fillingData = false;
+                    for (QueryDocumentSnapshot document : documentSnapshots) {
+                        Log.d("CharitylistLog", document.getId() + " => " + document.getData());
+                        String name = document.getString("name");
+                        String desc = document.getString("description");
+                        String url = document.getString("photourl");
+                        String qiwiPaymentUrl = document.getString("qiwiurl");
+                        Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url);
+                        charAdapter.objects.add(new Charity(document.getId(), name, (desc == null) ? "" : desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                        charAdapter.notifyDataSetChanged();
+                        i++;
                     }
+                    fillingData = false;
                 });//*/
     }
 
@@ -332,8 +323,7 @@ public class CharityListActivity extends AppCompatActivity {
                 public void onKeyEntered(String key, GeoLocation location) {
                     System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
                     Log.d("geoquery", "entereddoc:" + key);
-                    //Marker newmarker = gmap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).title(key));;
-                    //loadedmarkers.add(newmarker);
+
                     if (!geochars.contains(key)) {
                         Charity enteredCharity = new Charity();
                         FirebaseFirestore.getInstance().collection("charities").document(key).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -408,52 +398,46 @@ public class CharityListActivity extends AppCompatActivity {
                     .startAfter(lastVisible)
                     .limit(20)
                     .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot documentSnapshots) {
-                            int i = 0;
-                            if (documentSnapshots.size() == 0) return;
-                            lastVisible = documentSnapshots.getDocuments()
-                                    .get(documentSnapshots.size() - 1);
+                    .addOnSuccessListener(documentSnapshots -> {
+                        int i = 0;
+                        if (documentSnapshots.size() == 0) return;
+                        lastVisible = documentSnapshots.getDocuments()
+                                .get(documentSnapshots.size() - 1);
 
-                            for (QueryDocumentSnapshot document : documentSnapshots) {
-                                Log.d("CharitylistLog", document.getId() + " => " + document.getData());
-                                String name = document.getString("name");
-                                String desc = document.getString("description");
-                                String url = document.getString("photourl");
-                                String qiwiPaymentUrl = document.getString("qiwiurl");
-                                Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url + " " + qiwiPaymentUrl);
-                                charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
-                                charAdapter.notifyDataSetChanged();
-                                i++;
-                            }
-                            fillingData = false;
+                        for (QueryDocumentSnapshot document : documentSnapshots) {
+                            Log.d("CharitylistLog", document.getId() + " => " + document.getData());
+                            String name = document.getString("name");
+                            String desc = document.getString("description");
+                            String url = document.getString("photourl");
+                            String qiwiPaymentUrl = document.getString("qiwiurl");
+                            Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url + " " + qiwiPaymentUrl);
+                            charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                            charAdapter.notifyDataSetChanged();
+                            i++;
                         }
+                        fillingData = false;
                     });//*/
         } else {
             taggedquery
                     .limit(20)
                     .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot documentSnapshots) {
-                            int i = 0;
-                            lastVisible = documentSnapshots.getDocuments()
-                                    .get(documentSnapshots.size() - 1);
+                    .addOnSuccessListener(documentSnapshots -> {
+                        int i = 0;
+                        lastVisible = documentSnapshots.getDocuments()
+                                .get(documentSnapshots.size() - 1);
 
-                            for (QueryDocumentSnapshot document : documentSnapshots) {
-                                Log.d("CharitylistLog", document.getId() + " => " + document.getData());
-                                String name = document.getString("name");
-                                String desc = document.getString("description");
-                                String url = document.getString("photourl");
-                                String qiwiPaymentUrl = document.getString("qiwiurl");
-                                Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url + " " + qiwiPaymentUrl);
-                                charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
-                                charAdapter.notifyDataSetChanged();
-                                i++;
-                            }
-                            fillingData = false;
+                        for (QueryDocumentSnapshot document : documentSnapshots) {
+                            Log.d("CharitylistLog", document.getId() + " => " + document.getData());
+                            String name = document.getString("name");
+                            String desc = document.getString("description");
+                            String url = document.getString("photourl");
+                            String qiwiPaymentUrl = document.getString("qiwiurl");
+                            Log.d("CharitylistLog", "recieved: " + name + " " + desc + " " + url + " " + qiwiPaymentUrl);
+                            charAdapter.objects.add(new Charity(document.getId(), name, desc.substring(0, min(desc.length(), 50)), desc, -1, R.drawable.ic_launcher_foreground, i, url, qiwiPaymentUrl));
+                            charAdapter.notifyDataSetChanged();
+                            i++;
                         }
+                        fillingData = false;
                     });
         }
         charAdapter.notifyDataSetChanged();
@@ -465,38 +449,16 @@ public class CharityListActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users").document(user.getUid()).collection("locations")
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            Log.d("locationsofinterest", "size : " + String.valueOf(task.getResult().size()));
-                            Log.d("locationsofinterest", "recievd : " + task.getResult());
-                            if (task.getResult().size() > 0) {
-                                for (DocumentSnapshot document : task.getResult()) {
-                                    latitude = (double) document.get("latitude");
-                                    longitude = (double) document.get("longitude");
-                                }
-                            } else {
-                                Intent intent = new Intent(ctx, ActivityConfirm.class);
-
-                                intent.putExtra("CancelButtonTitle", "Cancel setting location");
-                                intent.putExtra("ConfirmButtonTitle", "Set location");
-                                intent.putExtra("PopupText", "You seem not to have locations of interest." +
-                                        "Location of interest is a place you are interested in hearing about, such as your local community, your city or your district." +
-                                        "When a charity is registered near your location of interest you recieve a notification." +
-                                        "We recommend setting a location of interest. You will be able to delete it or turn off notifications at any time.");
-
-                                Display display = getWindowManager().getDefaultDisplay();
-                                Point size = new Point();
-                                display.getSize(size);
-                                intent.putExtra("width", (int) ((double) (size.x) * 0.9));
-                                intent.putExtra("height", (int) ((double) (size.y) * 0.7));
-
-                                startActivityForResult(intent, 3);
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("locationsofinterest", "size : " + String.valueOf(task.getResult().size()));
+                        Log.d("locationsofinterest", "recievd : " + task.getResult());
+                        if (task.getResult().size() > 0) {
+                            for (DocumentSnapshot document : task.getResult()) {
+                                latitude = (double) document.get("latitude");
+                                longitude = (double) document.get("longitude");
                             }
                         } else {
-                            Log.d("locationsofinterest", "Error getting documents: ", task.getException());
-
                             Intent intent = new Intent(ctx, ActivityConfirm.class);
 
                             intent.putExtra("CancelButtonTitle", "Cancel setting location");
@@ -514,6 +476,25 @@ public class CharityListActivity extends AppCompatActivity {
 
                             startActivityForResult(intent, 3);
                         }
+                    } else {
+                        Log.d("locationsofinterest", "Error getting documents: ", task.getException());
+
+                        Intent intent = new Intent(ctx, ActivityConfirm.class);
+
+                        intent.putExtra("CancelButtonTitle", "Cancel setting location");
+                        intent.putExtra("ConfirmButtonTitle", "Set location");
+                        intent.putExtra("PopupText", "You seem not to have locations of interest." +
+                                "Location of interest is a place you are interested in hearing about, such as your local community, your city or your district." +
+                                "When a charity is registered near your location of interest you recieve a notification." +
+                                "We recommend setting a location of interest. You will be able to delete it or turn off notifications at any time.");
+
+                        Display display = getWindowManager().getDefaultDisplay();
+                        Point size = new Point();
+                        display.getSize(size);
+                        intent.putExtra("width", (int) ((double) (size.x) * 0.9));
+                        intent.putExtra("height", (int) ((double) (size.y) * 0.7));
+
+                        startActivityForResult(intent, 3);
                     }
                 });
 
@@ -582,22 +563,16 @@ public class CharityListActivity extends AppCompatActivity {
             location.put("longitude", longitude);
 
             db.collection("users").document(user.getUid()).collection("locations").document("FirstLocation").set(location)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            CollectionReference colref = FirebaseFirestore.getInstance().collection("users").document(user.getUid()).collection("locations");
-                            GeoFire geoFirestore = new GeoFire(colref);
-                            geoFirestore.setLocation("FirstLocation", new GeoLocation(latitude, longitude));
-                        }
+                    .addOnSuccessListener(aVoid -> {
+                        CollectionReference colref = FirebaseFirestore.getInstance().collection("users").document(user.getUid()).collection("locations");
+                        GeoFire geoFirestore = new GeoFire(colref);
+                        geoFirestore.setLocation("FirstLocation", new GeoLocation(latitude, longitude));
                     });
             db.collection("userlocations").document(user.getUid()).set(location)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            CollectionReference colref = FirebaseFirestore.getInstance().collection("userlocations");
-                            GeoFire geoFirestore = new GeoFire(colref);
-                            geoFirestore.setLocation(user.getUid(), new GeoLocation(latitude, longitude));
-                        }
+                    .addOnSuccessListener(aVoid -> {
+                        CollectionReference colref = FirebaseFirestore.getInstance().collection("userlocations");
+                        GeoFire geoFirestore = new GeoFire(colref);
+                        geoFirestore.setLocation(user.getUid(), new GeoLocation(latitude, longitude));
                     });
             db.collection("users").document(user.getUid()).update(location);
         } else {

@@ -34,6 +34,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
+import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -41,36 +42,30 @@ import java.nio.ByteBuffer
 class RecommendationClient(private val context: Context, private val config: ModelConfig) {
     private val candidates: MutableMap<Int, Charity> = HashMap()
     private var tflite: Interpreter? = null
+    lateinit var modelFile: File
 
     /** An immutable result returned by a RecommendationClient.  */
     data class Result(
         /** Predicted id.  */
-        val id: Int,
-        /** Recommended item.  */
-        val item: Charity,
+        val id: String,
         /** A sortable score for how good the result is relative to others. Higher should be better.  */
         val confidence: Float
     ) {
         override fun toString(): String {
-            return String.format("[%d] confidence: %.3f, item: %s", id, confidence, item)
+            return String.format("[%s] confidence: %.3f", id, confidence)
         }
     }
 
     /** Load the TF Lite model and dictionary.  */
-    suspend fun load() {
-        downloadRemoteModel()
-        loadLocalModel()
-        loadCandidateList()
+    suspend fun load(callback: (suspend ()->Unit)?) {
+        downloadRemoteModel(callback)
     }
 
     /** Load TF Lite model.  */
     private suspend fun loadLocalModel() {
         return withContext(Dispatchers.IO) {
             try {
-                val buffer: ByteBuffer = FileUtils.loadModelFile(
-                    context.assets, config.modelPath
-                )
-                initializeInterpreter(buffer)
+                initializeInterpreter()
                 Log.v(TAG, "TFLite model loaded.")
             } catch (ioException: IOException) {
                 ioException.printStackTrace()
@@ -78,17 +73,12 @@ class RecommendationClient(private val context: Context, private val config: Mod
         }
     }
 
-    private suspend fun initializeInterpreter(model: Any) {
-        return withContext(Dispatchers.IO) {
-            tflite?.apply {
-                close()
-            }
-            if (model is ByteBuffer) {
-                tflite = Interpreter(model)
-            } else {
-                tflite = (model as CustomModel).file?.let { Interpreter(it) }
-            }
-            Log.v(TAG, "TFLite model loaded.")
+    private fun initializeInterpreter() {
+        tflite = Interpreter(modelFile)
+        if (tflite == null) {
+            Log.d(TAG, "tflite still null")
+        } else {
+            Log.d(TAG, tflite.toString())
         }
     }
 
@@ -98,14 +88,12 @@ class RecommendationClient(private val context: Context, private val config: Mod
 
     /** Given a list of selected items, preprocess to get tflite input.  */
     @Synchronized
-    private suspend fun preprocess(userID: String): Array<String> {
+    private suspend fun preprocess(userID: String): Array<Array<String>> {
         return withContext(Dispatchers.Default) {
-            val inputContext = arrayOf(userID)
+            val inputContext = arrayOf(arrayOf(userID))
             inputContext
         }
     }
-
-
 
     /** Free up resources as the client is no longer needed.  */
     fun unload() {
@@ -116,17 +104,20 @@ class RecommendationClient(private val context: Context, private val config: Mod
     /** Given a list of selected items, and returns the recommendation results.  */
     @Synchronized
     suspend fun recommend(): List<Result> {
+        Log.d(TAG, "recommend run" + tflite)
         return withContext(Dispatchers.Default) {
             val user = FirebaseAuth.getInstance().currentUser
-            val inputs = arrayOf<Any>(preprocess(user?.uid ?: "0"))
-
+            val inputs: Array<Array<String>> = preprocess(user?.uid ?: "0")
+            Log.d(TAG, "" + inputs.size + " " + inputs.toString())
             // Run inference.
-            val outputIds = IntArray(config.outputLength)
-            val confidences = FloatArray(config.outputLength)
+            val outputIds: Array<Array<String>> = Array(1){Array(config.outputLength){"0"} }
+
+            val confidences = arrayOf(FloatArray(config.outputLength))
             val outputs: MutableMap<Int, Any> = HashMap()
             outputs[config.outputIdsIndex] = outputIds
             outputs[config.outputScoresIndex] = confidences
             tflite?.let {
+                Log.d(TAG, "tflite not null")
                 it.runForMultipleInputsOutputs(inputs, outputs)
                 postprocess(outputIds, confidences, user?.uid ?: "0")
             } ?: run {
@@ -139,26 +130,21 @@ class RecommendationClient(private val context: Context, private val config: Mod
     /** Postprocess to gets results from tflite inference.  */
     @Synchronized
     private suspend fun postprocess(
-        outputIds: IntArray, confidences: FloatArray, userID: String
+        outputIds: Array<Array<String>>, confidences: Array<FloatArray>, userID: String
     ): List<Result> {
         return withContext(Dispatchers.Default) {
             val results = ArrayList<Result>()
 
             // Add recommendation results. Filter null or contained items.
-            for (i in outputIds.indices) {
+            for (i in outputIds[0].indices) {
                 if (results.size >= config.topK) {
                     Log.v(TAG, String.format("Selected top K: %d. Ignore the rest.", config.topK))
                     break
                 }
-                val id = outputIds[i]
-                val item = candidates[id]
-                if (item == null) {
-                    Log.v(TAG, String.format("Inference output[%d]. Id: %s is null", i, id))
-                    continue
-                }
+                val id = outputIds[0][i]
                 val result = Result(
-                    id, item,
-                    confidences[i]
+                    id,
+                    confidences[0][i]
                 )
                 results.add(result)
                 Log.v(TAG, String.format("Inference output[%d]. Result: %s", i, result))
@@ -167,11 +153,11 @@ class RecommendationClient(private val context: Context, private val config: Mod
         }
     }
 
-    private fun downloadRemoteModel() {
-        downloadModel(config.remoteModelName)
+    private suspend fun downloadRemoteModel(callback: (suspend ()->Unit)?) {
+        downloadModel(config.remoteModelName, callback)
     }
 
-    private fun downloadModel(modelName: String) {
+    private suspend fun downloadModel(modelName: String, callback: (suspend ()->Unit)?) {
         val conditions = CustomModelDownloadConditions.Builder()
             .requireWifi()
             .build()
@@ -181,8 +167,16 @@ class RecommendationClient(private val context: Context, private val config: Mod
                 if (!it.isSuccessful) {
                     Toast.makeText(context, "Failed to get model file.", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Downloaded remote model: $modelName", Toast.LENGTH_SHORT).show()
-                    GlobalScope.launch { initializeInterpreter(it.result) }
+                    Log.d(TAG, "Downloaded remote model: $modelName ${it.result.localFilePath}")
+                    config.modelPath = it.result.localFilePath?: ""
+                    modelFile = it.result.file!!
+                    initializeInterpreter()
+                    GlobalScope.launch {
+                        loadLocalModel()
+                        loadCandidateList()
+                        callback?.invoke()
+                    }
+
                 }
             }
             .addOnFailureListener {

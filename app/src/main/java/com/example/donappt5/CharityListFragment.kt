@@ -28,9 +28,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class CharityListFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
     private lateinit var binding: FragmentCharityListBinding
     private lateinit var adapter: CharityAdapter
     var chars = ArrayList<Charity>()
@@ -40,14 +37,6 @@ class CharityListFragment : Fragment() {
     var lastVisible: DocumentSnapshot? = null
     var currentTag = "none"
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -79,7 +68,7 @@ class CharityListFragment : Fragment() {
                     // Refresh only when scrolled to the top
                     val refreshLayout = activity?.findViewById<SwipeRefreshLayout>(R.id.pullToRefresh)
                     val topRowVerticalPosition =
-                        if (view.getChildCount() === 0) 0 else lvMain.getChildAt(
+                        if (view.childCount == 0) 0 else lvMain.getChildAt(
                             0
                         ).getTop()
                     if (refreshLayout != null) {
@@ -242,7 +231,6 @@ class CharityListFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance() =
-            CharityListFragment().apply {
-            }
+            CharityListFragment().apply { }
     }
 }
