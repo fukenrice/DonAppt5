@@ -43,6 +43,7 @@
             android:id="@+id/tvName"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:textSize="20sp"
             android:textColor="@android:color/black" />
 
         <TextView
@@ -51,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textColor="@android:color/black"
-            android:textSize="20sp"></TextView>
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/tvRating"
@@ -59,7 +60,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginEnd="10dp"
-            android:textColor="@android:color/black"></TextView>
+            android:textColor="@android:color/black" />
     </LinearLayout>
 
 </LinearLayout>
