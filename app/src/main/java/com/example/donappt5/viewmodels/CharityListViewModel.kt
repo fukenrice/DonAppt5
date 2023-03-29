@@ -10,6 +10,7 @@ import com.example.donappt5.R
 import com.example.donappt5.data.adapters.CharityAdapter
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
+import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Util
 import com.example.donappt5.databinding.FragmentCharityListBinding
 import com.example.donappt5.views.charitydescription.CharityActivity
@@ -29,6 +30,7 @@ class CharityListViewModel : ViewModel() {
     var fillingData = false
     var lastVisible = MutableLiveData<DocumentSnapshot?>()
     var currentTag = "none"
+    val repo: FirestoreService = FirestoreService
 
     init {
         chars.value = ArrayList()
@@ -69,10 +71,7 @@ class CharityListViewModel : ViewModel() {
     }
 
     fun fillFavoritesData() {
-        val db = FirebaseFirestore.getInstance()
-        val user = FirebaseAuth.getInstance().currentUser
-        db.collection("users").document(user!!.uid).collection("favorites")
-            .get()
+        repo.fillFavoritesData()
             .addOnSuccessListener { documentSnapshots: QuerySnapshot ->
                 if (documentSnapshots.size() == 0) return@addOnSuccessListener
                 for (document in documentSnapshots) {
@@ -80,7 +79,7 @@ class CharityListViewModel : ViewModel() {
                     adapter.value?.notifyDataSetChanged()
                 }
                 fillingData = false
-            } //*/
+            }
     }
 
 
@@ -89,18 +88,9 @@ class CharityListViewModel : ViewModel() {
         if (fillingData) return
         fillingData = true
         val db = FirebaseFirestore.getInstance()
-        var taggedquery: Query
-        taggedquery = if (currentTag !== "none") {
-            db.collection("charities").whereEqualTo(currentTag, true)
-        } else {
-            db.collection("charities")
-        }
 
         if (lastVisible.value != null && adapter.value?.objects?.size!! >= 20) {
-            taggedquery
-                .startAfter(lastVisible!!)
-                .limit(20)
-                .get()
+            repo.getCharityList(currentTag, lastVisible=lastVisible.value)
                 .addOnSuccessListener(OnSuccessListener { documentSnapshots ->
                     if (documentSnapshots.size() == 0) return@OnSuccessListener
                     lastVisible?.value = documentSnapshots.documents[documentSnapshots.size() - 1]
@@ -111,9 +101,7 @@ class CharityListViewModel : ViewModel() {
                     fillingData = false
                 }) //*/
         } else {
-            taggedquery
-                .limit(20)
-                .get()
+            repo.getCharityList(currentTag)
                 .addOnSuccessListener { documentSnapshots ->
                     if (documentSnapshots.size() == 0) {
                         return@addOnSuccessListener
@@ -129,5 +117,4 @@ class CharityListViewModel : ViewModel() {
         adapter.value?.notifyDataSetChanged()
         Log.d("listfrag", adapter.value?.objects?.size.toString())
     }
-
 }
