@@ -64,7 +64,7 @@ public class FriendsAdapter extends BaseAdapter {
 
         //ImageView ivinad = view.findViewById(R.id.ivImage);
 
-        if (f.photourl != null) {
+        if (!f.photourl.isEmpty()) {
             //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
             Picasso.with(ctx).load(f.photourl).fit().into((ImageView)(view.findViewById(R.id.ivFriend)));
         }

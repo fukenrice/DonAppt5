@@ -36,7 +36,7 @@ import java.net.URL
 
 //import com.squareup.picasso.Picasso;
 class CharityActivity : AppCompatActivity() {
-    var descChar: Charity? = null
+    lateinit var descChar: Charity
     lateinit var ctx: Context
     var addedtofavs = false
     var fragdesc: CharityDescFragment? = null
@@ -83,7 +83,7 @@ class CharityActivity : AppCompatActivity() {
         btnDonate.setOnClickListener {
             logAnalyticsEvent(descChar!!.firestoreID);
 
-            if (descChar!!.paymentUrl != "" && descChar!!.paymentUrl != null) {
+            if (descChar.paymentUrl != "" && descChar!!.paymentUrl != null) {
                 val intent1 = Intent(ctx, QiwiPaymentActivity::class.java)
                 intent1.putExtra("firestoreID", descChar!!.firestoreID)
                 intent1.putExtra("charityname", descChar!!.name)
@@ -100,7 +100,7 @@ class CharityActivity : AppCompatActivity() {
         }
         val tvName = findViewById<View>(R.id.tvName) as TextView
         val ivImage = findViewById<View>(R.id.ivImage) as ImageView
-        if (descChar!!.photourl != null) {
+        if (!descChar!!.photourl.isEmpty()) {
             ivImage.setImageResource(R.drawable.ic_sync)
             Picasso.with(ctx).load(descChar!!.photourl).fit().into(ivImage)
         }

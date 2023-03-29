@@ -61,6 +61,7 @@ class CharityRecommendationsFragment : Fragment() {
                                 + id + ", name = " + clickedCharity.name + "url = " + clickedCharity.photourl + ", payment url = " + clickedCharity.paymentUrl
                     )
                     val intent = Intent(context, CharityActivity::class.java)
+                    intent.putExtra("firestoreID", clickedCharity.firestoreID)
                     intent.putExtra("chname", clickedCharity.name)
                     intent.putExtra("bdesc", clickedCharity.briefDescription)
                     intent.putExtra("fdesc", clickedCharity.fullDescription)

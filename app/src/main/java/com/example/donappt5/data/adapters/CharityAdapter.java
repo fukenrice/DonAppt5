@@ -63,7 +63,7 @@ public class CharityAdapter extends BaseAdapter {
 
         //ImageView ivinad = view.findViewById(R.id.ivImage);
 
-        if (c.photourl != null) {
+        if (!c.photourl.isEmpty()) {
             //Picasso.get().load(user.getPhotoUrl()).into(ivinHeader);
             Picasso.with(ctx).load(c.photourl).fit().into((ImageView)(view.findViewById(R.id.ivImage)));
         }
