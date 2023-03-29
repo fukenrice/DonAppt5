@@ -322,7 +322,7 @@ public class CharityCreationActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         createCharityWithID(task.getResult().getDocuments().get(0).getId());
                     } else {
-                        createCharityWithID(Util.getRandomString(28));
+                        createCharityWithID(Util.INSTANCE.getRandomString(28));
                     }
                 });
     }
