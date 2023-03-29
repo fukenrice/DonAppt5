@@ -46,7 +46,6 @@ class CharityRecommendationsFragment : Fragment() {
     }
 
     private fun setupView() {
-
         adapter =
             CharityAdapter(context, chars)
         binding.apply {
