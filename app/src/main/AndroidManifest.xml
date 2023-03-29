@@ -24,24 +24,24 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".OnBoardingActivity"
+            android:name=".views.onboarding.OnBoardingActivity"
             android:exported="false" />
         <activity
-            android:name=".OwnedCharityListActivity"
+            android:name=".views.OwnedCharityListActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".CharityEditActivity"
+            android:name=".views.CharityEditActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".paymentsstuff.QiwiPaymentActivity"
+            android:name=".views.QiwiPaymentActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
@@ -49,31 +49,27 @@
         </activity>
 
         <service
-            android:name=".Services.MyFirebaseMessagingService"
+            android:name=".data.services.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service
-            android:name=".Services.MyFirebaseInstanceIDService"
+            android:name=".data.services.MyFirebaseInstanceIDService"
             android:enabled="true"
             android:exported="true" />
-
         <activity
-            android:name=".paymentsstuff.CardSubmitActivity"
-            android:label="CardSubmit" />
-        <activity
-            android:name=".BrowseActivity"
+            android:name=".views.BrowseActivity"
             android:label="browse" />
         <activity
-            android:name=".PopupActivities.TagsActivity"
+            android:name=".views.charitycreation.popups.TagsActivity"
             android:label="tags" />
         <activity
-            android:name=".SettingsActivity"
+            android:name=".views.SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity
-            android:name=".CharitiesMapActivity"
+            android:name=".views.CharitiesMapActivity"
             android:label="@string/title_activity_charitymap" />
 
         <meta-data
@@ -87,21 +83,19 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".CharityListActivity">
+        <activity android:name=".views.charitylist.CharityListActivity">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".CharityActivity" />
-        <activity android:name=".ProfileActivity" />
-        <activity android:name=".CharityCreationActivity" />
-        <activity android:name=".helpclasses.CheckoutActivity" />
-        <activity android:name=".QRStuff.QRGenerateActivity" />
-        <activity android:name=".PopupActivities.LocatorActivity" />
+        <activity android:name=".views.charitydescription.CharityActivity" />
+        <activity android:name=".views.ProfileActivity" />
+        <activity android:name=".views.charitycreation.CharityCreationActivity" />
+        <activity android:name=".views.charitycreation.popups.LocatorActivity" />
         <activity
-            android:name=".PopupActivities.ActivityConfirm"
+            android:name=".views.charitycreation.popups.ActivityConfirm"
             android:theme="@style/AppTheme.PopUpWindowStyle" />
-        <activity android:name=".AuthenticationActivity" android:exported="true">
+        <activity android:name=".views.AuthenticationActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
