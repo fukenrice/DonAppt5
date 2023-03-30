@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
+import androidx.core.content.ContentProviderCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.donappt5.R
@@ -17,6 +19,7 @@ import com.example.donappt5.databinding.FragmentCharityListBinding
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.ModelConfig
 import com.example.donappt5.data.model.RecommendationClient
+import com.example.donappt5.viewmodels.CharityRecommendationsViewModel
 import com.example.donappt5.views.charitydescription.CharityActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -28,33 +31,31 @@ import kotlinx.coroutines.launch
  */
 class CharityRecommendationsFragment : Fragment() {
     private lateinit var binding: FragmentCharityListBinding
-    private lateinit var adapter: CharityAdapter
     var chars = ArrayList<Charity>()
-    private var config = ModelConfig()
-    private lateinit var client: RecommendationClient
+    lateinit var viewModel: CharityRecommendationsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         Log.d("CharityRecommendationsFragment", "entered")
-        // Inflate the layout for this fragment
         binding = FragmentCharityListBinding.inflate(inflater, container, false)
+        viewModel = ViewModelProvider(this)[CharityRecommendationsViewModel::class.java]
         setupView()
         val view = binding.root
         return view
     }
 
     private fun setupView() {
-        adapter =
+        viewModel.adapter.value =
             CharityAdapter(context, chars)
         binding.apply {
             lvMain.isClickable = true
-            lvMain.adapter = adapter
+            lvMain.adapter = viewModel.adapter.value
 
             lvMain.onItemClickListener =
                 OnItemClickListener { parent, view, position, id ->
-                    val clickedCharity: Charity = adapter.getCharity(position)
+                    val clickedCharity: Charity = viewModel.adapter.value!!.getCharity(position)
                     Log.d(
                         "Click", "itemClick: position = " + position + ", id = "
                                 + id + ", name = " + clickedCharity.name + "url = " + clickedCharity.photourl + ", payment url = " + clickedCharity.paymentUrl
@@ -86,34 +87,15 @@ class CharityRecommendationsFragment : Fragment() {
                 }
             })
         }
-        fillData()
-    }
-
-    fun fillData() {
-        client = RecommendationClient(requireContext(), config)
+        viewModel.client.value = RecommendationClient(requireContext(), viewModel.config.value?: ModelConfig())
         lifecycleScope.launch {
-            client.load {
-                lifecycleScope.launch {
-                    val db = FirebaseFirestore.getInstance()
-                    var results = client.recommend()
-                    results.forEach {
-                        db.collection("charities").document(it.id).get().addOnSuccessListener { doc ->
-                            adapter.objects.add(
-                                Charity(
-                                    doc
-                                )
-                            )
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
-                }
-            }
+            viewModel.fillData()
         }
     }
 
     override fun onStop() {
         lifecycleScope.launch {
-            client.unload()
+            viewModel.client.value?.unload()
         }
         super.onStop()
     }
