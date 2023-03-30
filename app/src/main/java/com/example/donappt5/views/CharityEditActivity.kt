@@ -104,7 +104,9 @@ class CharityEditActivity : AppCompatActivity() {
 
         binding.apply {
             ivChangeImage.setImageResource(R.drawable.ic_sync)
-            Picasso.with(this@CharityEditActivity).load(charity.photourl).fit().into(ivChangeImage)
+            if (!charity.photourl.isEmpty()) {
+                Picasso.with(this@CharityEditActivity).load(charity.photourl).fit().into(ivChangeImage)
+            }
 
             etName.setText(charity.name)
 
