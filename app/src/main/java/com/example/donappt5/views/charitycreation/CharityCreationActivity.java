@@ -319,7 +319,7 @@ public class CharityCreationActivity extends AppCompatActivity {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("charities")
                 .whereEqualTo("name", etName.getText().toString()).get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
+                    if (task.isSuccessful() && task.getResult().getDocuments().size() != 0) {
                         createCharityWithID(task.getResult().getDocuments().get(0).getId());
                     } else {
                         createCharityWithID(Util.INSTANCE.getRandomString(28));
