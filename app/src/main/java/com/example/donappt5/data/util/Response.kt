@@ -1,13 +1,20 @@
 package com.example.donappt5.data.util
 
-sealed class Response<out T> {
-    object Loading: Response<Nothing>()
+data class Response<out T>(val status: Status, val data: T?, val message: String?) {
 
-    data class Success<out T>(
-        val data: T?
-    ): Response<T>()
+    companion object {
 
-    data class Failure(
-        val e: Exception?
-    ): Response<Nothing>()
+        fun <T> success(data: T?): Response<T> {
+            return Response(Status.SUCCESS, data, null)
+        }
+
+        fun <T> error(msg: String, data: T?): Response<T> {
+            return Response(Status.ERROR, data, msg)
+        }
+
+        fun <T> loading(data: T?): Response<T> {
+            return Response(Status.LOADING, data, null)
+        }
+
+    }
 }
