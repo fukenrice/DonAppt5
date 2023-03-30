@@ -63,7 +63,7 @@ class MyGlobals     // constructor
         view: BottomNavigationView) {
         view.menu.findItem(when(activity) {
             is CharityListActivity -> { R.id.charitylist }
-            is BrowseActivity -> { R.id.charitylist }
+            // is BrowseActivity -> { R.id.charitylist }
             is CharitiesMapActivity -> { R.id.map }
             is CharityActivity -> { R.id.charitylist }
             is CharityCreationActivity -> { R.id.donations }

@@ -60,9 +60,6 @@
             android:enabled="true"
             android:exported="true" />
         <activity
-            android:name=".views.BrowseActivity"
-            android:label="browse" />
-        <activity
             android:name=".views.charitycreation.popups.TagsActivity"
             android:label="tags" />
         <activity

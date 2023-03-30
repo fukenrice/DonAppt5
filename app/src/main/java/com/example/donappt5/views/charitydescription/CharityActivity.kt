@@ -188,13 +188,12 @@ class CharityActivity : AppCompatActivity() {
             return when (pos) {
                 0 -> CharityDescFragment.newInstance(descChar)
                 1 -> CharityGoalsFragment.newInstance(descChar)
-                2 -> CharityForumFragment.newInstance(descChar)
-                else -> CharityForumFragment.newInstance(descChar)
+                else -> CharityDescFragment.newInstance(descChar)
             }
         }
 
         override fun getCount(): Int {
-            return 3
+            return 2
         }
     }
 

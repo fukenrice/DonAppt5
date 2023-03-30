@@ -13,11 +13,11 @@ import kotlinx.coroutines.tasks.await
 object FirestoreService {
     private const val TAG = "FirestoreService"
 
-    suspend fun getCharityData(firestoreID: String): Charity? {
+    fun getCharityData(firestoreID: String): Task<DocumentSnapshot?>?{
         val db = FirebaseFirestore.getInstance()
         return try {
             db.collection("charities")
-                .document(firestoreID).get().await().toCharity()
+                .document(firestoreID).get()
         } catch (e: Exception) {
             Log.e(TAG, "Error getting charity details", e)
             null
@@ -31,7 +31,6 @@ object FirestoreService {
         } else {
             db.collection("charities")
         }
-
         if (lastVisible != null) {
             return taggedquery
                 .startAfter(lastVisible!!)
