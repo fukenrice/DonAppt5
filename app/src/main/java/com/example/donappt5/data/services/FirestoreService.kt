@@ -24,7 +24,10 @@ object FirestoreService {
         }
     }
 
-    fun getCharityList(currentTag: String, lastVisible: DocumentSnapshot? = null): Task<QuerySnapshot> {
+    fun getCharityList(
+        currentTag: String,
+        lastVisible: DocumentSnapshot? = null
+    ): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         val taggedquery = if (currentTag !== "none") {
             db.collection("charities").whereEqualTo(currentTag, true)
@@ -49,5 +52,17 @@ object FirestoreService {
         val user = FirebaseAuth.getInstance().currentUser
         return db.collection("users").document(user!!.uid).collection("favorites")
             .get()
+    }
+
+    fun getPreferences(): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
+        return db.collection("users").document(user!!.uid).get()
+    }
+
+    fun setPreferences(preferences: Map<String, Any>): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
+        return db.collection("users").document(user!!.uid).update(preferences)
     }
 }
