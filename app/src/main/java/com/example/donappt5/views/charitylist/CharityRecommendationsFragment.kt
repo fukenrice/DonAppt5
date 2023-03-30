@@ -8,20 +8,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
-import androidx.core.content.ContentProviderCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.donappt5.R
-import com.example.donappt5.data.adapters.CharityAdapter
+import com.example.donappt5.adapters.CharityAdapter
 import com.example.donappt5.databinding.FragmentCharityListBinding
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.ModelConfig
 import com.example.donappt5.data.model.RecommendationClient
 import com.example.donappt5.viewmodels.CharityRecommendationsViewModel
 import com.example.donappt5.views.charitydescription.CharityActivity
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
 /**

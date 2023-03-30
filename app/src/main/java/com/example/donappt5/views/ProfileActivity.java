@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.donappt5.R;
-import com.example.donappt5.data.adapters.FriendsAdapter;
+import com.example.donappt5.adapters.FriendsAdapter;
 import com.example.donappt5.data.model.Friend;
 import com.example.donappt5.data.util.MyGlobals;
 import com.example.donappt5.views.charitylist.CharityListActivity;

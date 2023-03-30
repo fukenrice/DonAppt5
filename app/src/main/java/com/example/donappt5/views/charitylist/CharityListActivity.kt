@@ -19,7 +19,7 @@ import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.example.donappt5.R
-import com.example.donappt5.data.adapters.CharityAdapter
+import com.example.donappt5.adapters.CharityAdapter
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.MyGlobals
 import com.example.donappt5.viewmodels.ProgramEntryViewModel
