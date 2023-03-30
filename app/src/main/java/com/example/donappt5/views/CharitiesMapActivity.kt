@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -33,7 +32,6 @@ import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.clustering.ClusterManager
 import com.koalap.geofirestore.GeoLocation
 
@@ -55,7 +53,7 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
         viewModel.pixelDensityDpi = context.resources.displayMetrics.densityDpi.toDouble()
         viewModel.mFusedLocationClient.value = LocationServices.getFusedLocationProviderClient(this)
 
-        viewModel.latitude.observe(this) {
+        viewModel.location.observe(this) {
             if (gmap != null) {
                 gmap!!.moveCamera(CameraUpdateFactory.newLatLng(viewModel.location.value!!))
                 mLocation!!.position = viewModel.location.value!!
@@ -65,7 +63,7 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
             gmap!!.moveCamera(CameraUpdateFactory.newLatLng(viewModel.location.value!!))
             mLocation!!.position = viewModel.location.value!!
         }
-        lastLocation()
+        getLastLocation()
         var mapViewBundle: Bundle? = null
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(MAP_VIEW_BUNDLE_KEY)
@@ -98,7 +96,7 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (requestCode == PERMISSION_ID) {
             if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Granted. Start getting the location information
-                lastLocation()
+                getLastLocation()
             }
         }
     }
@@ -112,7 +110,7 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
     @SuppressLint("MissingPermission") // checked in checkPermissions()
-    private fun lastLocation() {
+    private fun getLastLocation() {
         if (checkPermissions()) {
             if (isLocationEnabled) {
                 viewModel.getLastLocation()
@@ -151,9 +149,9 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(viewModel.location.value!!, 10f))
         mLocation = googleMap.addMarker(MarkerOptions().position(viewModel.location.value!!).title("Marker"))
+        if (mLocation == null) return
         mLocation!!.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
         mLocation!!.zIndex = 1000f
-        //mLocation.set
         gmap = googleMap
         gmap!!.uiSettings.isZoomControlsEnabled = true
         googleMap.setMapStyle(
@@ -205,7 +203,7 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
-        lastLocation()
+        getLastLocation()
         mapView.onResume()
         myGlobals!!.setSelectedItem(this, bottomNavigationView!!)
     }

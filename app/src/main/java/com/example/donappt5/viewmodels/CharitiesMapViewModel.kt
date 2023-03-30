@@ -27,6 +27,9 @@ class CharitiesMapViewModel() : ViewModel() {
     var mFusedLocationClient = MutableLiveData<FusedLocationProviderClient>()
 
     init {
+        latitude.value = 1000.0
+        longitude.value = 1000.0
+        location.value = LatLng(latitude.value!!, longitude.value!!)
         loadedchars = HashSet()
     }
 
@@ -46,7 +49,6 @@ class CharitiesMapViewModel() : ViewModel() {
             if (location == null) {
                 requestNewLocationData()
             } else {
-                //gmap.setMinZoomPreference(12);
                 Log.d(
                     "LocatorActivityTracker",
                     "getlastlocation: lat, long: " + location.latitude + location.longitude
@@ -108,7 +110,7 @@ class CharitiesMapViewModel() : ViewModel() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun requestNewLocationData() {
+    fun requestNewLocationData() {
         val mLocationRequest = LocationRequest()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         mLocationRequest.interval = 0
