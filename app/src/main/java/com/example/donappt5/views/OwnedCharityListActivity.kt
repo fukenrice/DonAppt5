@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.example.donappt5.R
-import com.example.donappt5.data.adapters.CharityAdapter
+import com.example.donappt5.adapters.CharityAdapter
 import com.example.donappt5.databinding.ActivityOwnedCharityListBinding
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.MyGlobals

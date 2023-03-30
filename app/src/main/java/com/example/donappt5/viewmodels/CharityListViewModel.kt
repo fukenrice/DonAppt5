@@ -1,30 +1,26 @@
 package com.example.donappt5.viewmodels
 
-import android.content.Intent
 import android.util.Log
 import android.widget.AbsListView
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.donappt5.R
-import com.example.donappt5.data.adapters.CharityAdapter
+import com.example.donappt5.adapters.CharityAdapter
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.example.donappt5.data.services.FirestoreService
+import com.example.donappt5.data.util.Response
+import com.example.donappt5.data.util.Status
 import com.example.donappt5.data.util.Util
-import com.example.donappt5.databinding.FragmentCharityListBinding
-import com.example.donappt5.views.charitydescription.CharityActivity
-import com.example.donappt5.views.charitylist.CharityListActivity
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import kotlin.math.log
 
 class CharityListViewModel : ViewModel() {
-    var chars = MutableLiveData<ArrayList<Charity>>()
-    var adapter = MutableLiveData<CharityAdapter>()
+    var chars = MutableLiveData<Response<ArrayList<Charity>>>()
     var fillingmode = 0
     var preLast = 0
     var fillingData = false
@@ -33,29 +29,10 @@ class CharityListViewModel : ViewModel() {
     val repo: FirestoreService = FirestoreService
 
     init {
-        chars.value = ArrayList()
+        chars.postValue(Response.loading(arrayListOf()))
+        fillData()
     }
 
-    fun onMyScroll(
-        lw: AbsListView, firstVisibleItem: Int,
-        visibleItemCount: Int, totalItemCount: Int
-    ) {
-        if (fillingmode == Util.FILLING_FAVORITES) return
-        when (lw.id) {
-            R.id.lvMain -> {
-                val lastItem = firstVisibleItem + visibleItemCount
-                if (lastItem == totalItemCount) {
-                    if (preLast != lastItem) {
-                        //to avoid multiple calls for last item
-                        Log.d("Last", "Last")
-                        preLast = lastItem
-                        fillData()
-//                        Log.d("georad", fdistance.toString())
-                    }
-                }
-            }
-        }
-    }
 
     fun fillData() {
         Log.d("fillingmode", fillingmode.toString())
@@ -71,13 +48,18 @@ class CharityListViewModel : ViewModel() {
     }
 
     fun fillFavoritesData() {
+        chars.postValue(Response.loading(null))
         repo.fillFavoritesData()
             .addOnSuccessListener { documentSnapshots: QuerySnapshot ->
-                if (documentSnapshots.size() == 0) return@addOnSuccessListener
-                for (document in documentSnapshots) {
-                    adapter.value?.objects?.add(document.toCharity())
-                    adapter.value?.notifyDataSetChanged()
+                if (documentSnapshots.size() == 0) {
+                    chars.postValue(Response.success(arrayListOf()))
+                    return@addOnSuccessListener
                 }
+                val list = arrayListOf<Charity>()
+                for (document in documentSnapshots) {
+                    document.toCharity()?.let { list.add(it) }
+                }
+                chars.postValue(Response.success(list))
                 fillingData = false
             }
     }
@@ -87,34 +69,45 @@ class CharityListViewModel : ViewModel() {
         Log.d("listfrag", "filling started")
         if (fillingData) return
         fillingData = true
-        val db = FirebaseFirestore.getInstance()
 
-        if (lastVisible.value != null && adapter.value?.objects?.size!! >= 20) {
+        if (lastVisible.value != null && chars.value?.data?.size!! >= 20) {
+            chars.postValue(Response.loading(chars.value!!.data))
             repo.getCharityList(currentTag, lastVisible=lastVisible.value)
                 .addOnSuccessListener(OnSuccessListener { documentSnapshots ->
                     if (documentSnapshots.size() == 0) return@OnSuccessListener
                     lastVisible?.value = documentSnapshots.documents[documentSnapshots.size() - 1]
+                    val list = arrayListOf<Charity>()
                     for (document in documentSnapshots) {
-                        adapter.value?.objects?.add(document.toCharity())
-                        adapter.value?.notifyDataSetChanged()
+                        document.toCharity()?.let { list.add(it) }
                     }
+                    // TODO: По-хорошему, состояние должно быть иммутабельным, то есть каждый раз,
+                    //  когда меняется состояние, оно должно пересоздаваться, на основе предыдущего.
+                    //  Будем делать и стоит ли в нашем случае?
+                    chars.value?.data?.plusAssign(list)
+                    Log.d("charityvm", "size: ${chars.value!!.data!!.size}")
+                    chars.postValue(Response.success(chars.value!!.data))
                     fillingData = false
-                }) //*/
+                })
         } else {
+            chars.postValue(Response.loading(null))
             repo.getCharityList(currentTag)
                 .addOnSuccessListener { documentSnapshots ->
                     if (documentSnapshots.size() == 0) {
                         return@addOnSuccessListener
                     }
                     lastVisible.value = documentSnapshots.documents[documentSnapshots.size() - 1]
+                    val list = arrayListOf<Charity>()
                     for (document in documentSnapshots) {
-                        adapter.value?.objects?.add(document.toCharity())
-                        adapter.value?.notifyDataSetChanged()
+                        document.toCharity()?.let { list.add(it) }
                     }
+                    chars.postValue(Response.success(list))
                     fillingData = false
                 }
         }
-        adapter.value?.notifyDataSetChanged()
-        Log.d("listfrag", adapter.value?.objects?.size.toString())
     }
+
+    fun getChars() : LiveData<Response<ArrayList<Charity>>> {
+        return chars
+    }
+
 }

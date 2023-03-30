@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.donappt5.data.adapters.MessagesAdapter;
+import com.example.donappt5.adapters.MessagesAdapter;
 import com.example.donappt5.R;
 import com.example.donappt5.data.model.Charity;
 import com.example.donappt5.data.model.ForumMessage;
