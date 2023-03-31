@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.example.donappt5.data.util.MyGlobals;
 import com.example.donappt5.data.model.User;
 import com.example.donappt5.views.charitylist.CharityListActivity;
+import com.example.donappt5.views.onboarding.OnBoardingActivity;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -49,7 +50,6 @@ public class AuthenticationActivity extends AppCompatActivity {
 // Create and launch sign-in intent
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
         if (user != null) {
             Intent intent = new Intent(ctx, CharityListActivity.class);
             Toast.makeText(ctx, "welcome, " + user.getDisplayName(), Toast.LENGTH_LONG).show();
@@ -138,10 +138,9 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                                     //param.putString("fields", "friendlist", "members");
 
-                                    Intent intent = new Intent(ctx, CharityListActivity.class);
+                                    Intent intent = new Intent(ctx, OnBoardingActivity.class);
                                     startActivity(intent);
                                 } else {
-                                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                                     User curuser = new User(user.getDisplayName(), user.getEmail(), user.getPhotoUrl(), user.getUid());
 
                                     Map<String, Object> usermap = new HashMap<>();
@@ -166,7 +165,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                                 }
                                             });
                                     Toast.makeText(ctx, "welcome, " + curuser.username, Toast.LENGTH_LONG).show();
-                                    Intent intent = new Intent(ctx, CharityListActivity.class);
+                                    Intent intent = new Intent(ctx, OnBoardingActivity.class);
                                     startActivity(intent);
                                 }
                             } else {
