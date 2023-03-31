@@ -70,6 +70,23 @@ object FirestoreService {
         return db.collection("users").document(user!!.uid).update(preferences)
     }
 
+    fun getOwnedCharities(lastVisible: DocumentSnapshot? = null): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
+        val query = db.collection("charities").whereEqualTo("creatorid", user!!.uid)
+
+        if (lastVisible != null) {
+            return query
+                .startAfter(lastVisible!!)
+                .limit(20)
+                .get()
+        } else {
+            return query
+                .limit(20)
+                .get()
+        }
+    }
+
     fun getPhotoUrl(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
         val user = FirebaseAuth.getInstance().currentUser
