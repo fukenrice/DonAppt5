@@ -27,12 +27,13 @@
 
     <ImageButton
         android:id="@+id/btnAddRow"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginBottom="24dp"
         android:background="@drawable/ic_plus"
+        app:layout_constraintBottom_toBottomOf="@+id/tlOnboarding"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tlOnboarding" />
+        app:layout_constraintStart_toStartOf="@+id/tlOnboarding" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
