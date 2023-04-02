@@ -17,7 +17,7 @@ import com.example.donappt5.views.adapters.CharityAdapter
 import com.example.donappt5.databinding.FragmentCharityListBinding
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.ModelConfig
-import com.example.donappt5.data.model.RecommendationClient
+import com.example.donappt5.data.services.RecommendationClient
 import com.example.donappt5.viewmodels.CharityRecommendationsViewModel
 import com.example.donappt5.views.charitydescription.CharityActivity
 import kotlinx.coroutines.launch

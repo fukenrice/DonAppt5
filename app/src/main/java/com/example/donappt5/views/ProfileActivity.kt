@@ -29,7 +29,6 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var btnLogOut: Button
     lateinit var ctx: Context
     lateinit var btnLoadProfile: Button
-    lateinit var lvFriends: ListView
     lateinit var btnFavs: Button
     lateinit var tvUserName: TextView
     lateinit var btnChangeName: Button

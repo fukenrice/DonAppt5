@@ -144,13 +144,12 @@ class CharityActivity : AppCompatActivity() {
         override fun getItem(pos: Int): Fragment {
             return when (pos) {
                 0 -> CharityDescFragment.newInstance(viewModel.getCharity().value!!.data)
-                1 -> CharityGoalsFragment.newInstance(viewModel.getCharity().value!!.data)
                 else -> CharityDescFragment.newInstance(viewModel.getCharity().value!!.data)
             }
         }
 
         override fun getCount(): Int {
-            return 2
+            return 1
         }
     }
 }
