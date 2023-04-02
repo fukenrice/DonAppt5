@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.PagerAdapter
 import com.example.donappt5.R
 import com.example.donappt5.data.model.Charity
-import com.example.donappt5.data.util.MyGlobals
+import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.data.util.Status
 import com.example.donappt5.databinding.ActivityCharitydescBinding
 import com.example.donappt5.viewmodels.CharityViewModel

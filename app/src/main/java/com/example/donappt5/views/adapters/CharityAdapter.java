@@ -1,4 +1,4 @@
-package com.example.donappt5.adapters;
+package com.example.donappt5.views.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;

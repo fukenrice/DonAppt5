@@ -1,23 +1,17 @@
 package com.example.donappt5.viewmodels
 
 import android.util.Log
-import android.widget.AbsListView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.donappt5.R
-import com.example.donappt5.adapters.CharityAdapter
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Response
-import com.example.donappt5.data.util.Status
-import com.example.donappt5.data.util.Util
+import com.example.donappt5.util.Util
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import kotlin.math.log
 
 class CharityListViewModel : ViewModel() {
     var chars = MutableLiveData<Response<ArrayList<Charity>>>()

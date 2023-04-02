@@ -1,4 +1,4 @@
-package com.example.donappt5.data.util
+package com.example.donappt5.util
 
 import android.app.Activity
 import android.content.Context

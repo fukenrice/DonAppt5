@@ -3,44 +3,27 @@ package com.example.donappt5.views
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.donappt5.R
-import com.example.donappt5.adapters.FriendsAdapter
-import com.example.donappt5.data.model.Friend
 import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Status
 import com.example.donappt5.viewmodels.ProfileViewModel
 import com.example.donappt5.views.charitylist.CharityListActivity
 import com.example.donappt5.views.onboarding.OnBoardingActivity
-import com.facebook.AccessToken
-import com.facebook.GraphRequest
-import com.facebook.HttpMethod
 import com.facebook.login.LoginManager
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.tasks.Task
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.UploadTask
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.tasks.await
-import org.json.JSONException
 
 class ProfileActivity : AppCompatActivity() {
     lateinit var btnLogOut: Button
