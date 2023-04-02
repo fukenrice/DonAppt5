@@ -19,8 +19,8 @@ import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.example.donappt5.data.model.MyClusterItem
 import com.example.donappt5.data.services.FirestoreService
-import com.example.donappt5.data.util.MyClusterRenderer
-import com.example.donappt5.data.util.MyGlobals
+import com.example.donappt5.util.MyClusterRenderer
+import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.viewmodels.CharitiesMapViewModel
 import com.example.donappt5.views.charitydescription.CharityActivity
 import com.google.android.gms.location.*

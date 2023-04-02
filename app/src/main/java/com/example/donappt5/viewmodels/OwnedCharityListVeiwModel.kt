@@ -1,19 +1,14 @@
 package com.example.donappt5.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.donappt5.R
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Response
-import com.example.donappt5.data.util.Util
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
 
 class OwnedCharityListVeiwModel : ViewModel() {
     var chars = MutableLiveData<Response<ArrayList<Charity>>>()

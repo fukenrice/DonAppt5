@@ -2,7 +2,7 @@ package com.example.donappt5.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.donappt5.adapters.CharityAdapter
+import com.example.donappt5.views.adapters.CharityAdapter
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.RecommendationClient
 import com.example.donappt5.data.util.ModelConfig

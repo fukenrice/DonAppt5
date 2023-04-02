@@ -8,17 +8,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.donappt5.R
-import com.example.donappt5.adapters.CharityAdapter
+import com.example.donappt5.views.adapters.CharityAdapter
 import com.example.donappt5.databinding.FragmentCharityListBinding
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.Status
-import com.example.donappt5.data.util.Util
+import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.CharityListViewModel
 import com.example.donappt5.views.charitydescription.CharityActivity
 
@@ -60,7 +59,10 @@ class CharityListFragment : Fragment() {
     }
 
     fun setupView() {
-        adapter = CharityAdapter(context, arrayListOf())
+        adapter = CharityAdapter(
+            context,
+            arrayListOf()
+        )
         binding.apply {
             lvMain.isClickable = true
             lvMain.adapter = adapter
