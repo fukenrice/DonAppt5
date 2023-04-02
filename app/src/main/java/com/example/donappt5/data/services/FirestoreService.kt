@@ -7,6 +7,7 @@ import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
@@ -18,7 +19,7 @@ import kotlinx.coroutines.tasks.await
 object FirestoreService {
     private const val TAG = "FirestoreService"
 
-    fun getCharityData(firestoreID: String): Task<DocumentSnapshot?>?{
+    fun getCharityData(firestoreID: String): Task<DocumentSnapshot?>? {
         val db = FirebaseFirestore.getInstance()
         return try {
             db.collection("charities")
@@ -126,6 +127,29 @@ object FirestoreService {
         } else {
             Log.d("puttingphoto", "nullpath")
         }
+    }
+
+
+    fun loadFav(charId: String): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
+        return db.collection("users").document(user!!.uid).collection("favorites").document(charId)
+            .get()
+    }
+
+    fun removeFav(charId: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
+        return db.collection("users").document(user!!.uid).collection("favorites").document(charId)
+            .delete()
+    }
+
+    fun addFav(charId: String, data: HashMap<String, Any>): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
+        return db.collection("users").document(user!!.uid).collection("favorites").document(
+            charId
+        ).set(data)
     }
 
 }

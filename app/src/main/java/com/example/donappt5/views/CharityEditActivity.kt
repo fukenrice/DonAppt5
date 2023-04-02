@@ -22,8 +22,8 @@ import com.example.donappt5.views.charitycreation.popups.TagsActivity
 import com.example.donappt5.R
 import com.example.donappt5.databinding.ActivityCharityeditBinding
 import com.example.donappt5.data.model.Charity
-import com.example.donappt5.data.util.MyGlobals
-import com.example.donappt5.data.util.Util
+import com.example.donappt5.util.MyGlobals
+import com.example.donappt5.util.Util
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

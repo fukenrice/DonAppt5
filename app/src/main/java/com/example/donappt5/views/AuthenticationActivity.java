@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.donappt5.data.util.MyGlobals;
+import com.example.donappt5.util.MyGlobals;
 import com.example.donappt5.data.model.User;
 import com.example.donappt5.views.charitylist.CharityListActivity;
 import com.example.donappt5.views.onboarding.OnBoardingActivity;
