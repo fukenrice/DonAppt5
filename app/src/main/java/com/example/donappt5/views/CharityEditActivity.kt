@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.donappt5.views.charitycreation.CharityCreateDesc
 import com.example.donappt5.views.charitycreation.CharityCreatePaymentCredentials
 import com.example.donappt5.views.charitycreation.popups.LocatorActivity
@@ -22,8 +24,11 @@ import com.example.donappt5.views.charitycreation.popups.TagsActivity
 import com.example.donappt5.R
 import com.example.donappt5.databinding.ActivityCharityeditBinding
 import com.example.donappt5.data.model.Charity
+import com.example.donappt5.data.util.Status
 import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.util.Util
+import com.example.donappt5.viewmodels.CharityEditViewModel
+import com.example.donappt5.viewmodels.OnBoardingViewModel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -36,8 +41,6 @@ import com.squareup.picasso.Picasso
 
 class CharityEditActivity : AppCompatActivity() {
 
-
-    //    lateinit var ctags: BooleanArray
     var ctags = mutableMapOf(
         "cart" to false,
         "ckids" to false,
@@ -50,21 +53,13 @@ class CharityEditActivity : AppCompatActivity() {
     private var latitude: Double = 0.0
     lateinit var descChar: Charity
     lateinit var binding: ActivityCharityeditBinding
-    lateinit var ivPhotoEdit: ImageView
-    lateinit var ivCheckName: ImageView
-    lateinit var tvName: TextView
+    lateinit var viewModel: CharityEditViewModel
     lateinit var fragDesc: CharityCreateDesc
     lateinit var fragCredentials: CharityCreatePaymentCredentials
-    lateinit var btnConfirm: Button
-    lateinit var btnDelete: Button
-    lateinit var btnChangeTags: Button
-    lateinit var btnChangeLocation: Button
 
     //lateinit var pager: ViewPager
     var SELECT_PICTURE = 2878
     var imageUri: Uri? = null
-    var loadedUri: Uri? = null
-    var fileUrl: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,6 +81,10 @@ class CharityEditActivity : AppCompatActivity() {
         binding = ActivityCharityeditBinding.inflate(layoutInflater)
         var myGlobals = MyGlobals(this)
         myGlobals.setupBottomNavigation(ctx, this, binding.bottomNavigation)
+        viewModel = ViewModelProvider(this)[CharityEditViewModel::class.java]
+        viewModel.charity = descChar
+
+        setupObserver()
         setupView(descChar)
     }
 
@@ -95,17 +94,115 @@ class CharityEditActivity : AppCompatActivity() {
         myGlobals.setSelectedItem(this, binding.bottomNavigation)
     }
 
+    private fun setupObserver() {
+        viewModel.edited.observe(this, Observer {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    Toast.makeText(
+                        this,
+                        "Charity has been successfully edited.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
+
+                Status.LOADING -> {
+
+                }
+
+                Status.ERROR -> {
+                    Toast.makeText(this, "An error occurred while editing the charity.", Toast.LENGTH_SHORT).show()
+                    Log.d("charityEdit", "setupObserverEdited: ${it.message}")
+                }
+            }
+        })
+
+        viewModel.tags.observe(this) {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    Toast.makeText(
+                        this,
+                        "Tags had been successfully edited.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                Status.LOADING -> {
+
+                }
+
+                Status.ERROR -> {
+                    Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+                    Log.d("charityEdit", "setupObserverTags: ${it.message}")
+                }
+            }
+        }
+
+        viewModel.deleted.observe(this) {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    Toast.makeText(
+                        this,
+                        "Charity has been successfully deleted.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    finish()
+                }
+
+                Status.LOADING -> {
+
+                }
+
+                Status.ERROR -> {
+                    Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+                    Log.d("charityEdit", "setupObserverDelete: ${it.message}")
+                }
+            }
+        }
+
+        viewModel.isNameFree.observe(this) {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    if (it.data == true) {
+                        binding.apply {
+                            imgbtnNameCheck.setImageResource(R.drawable.ic_check_foreground)
+                            tvCharityNameCheck.setText("charity with such name does not exist. You can create one!")
+                            btnConfirmChanges.setClickable(true)
+                        }
+                    } else {
+                        binding.apply {
+                            imgbtnNameCheck.setImageResource(R.drawable.ic_warning_foreground)
+                            tvCharityNameCheck.setText("charity with such name already exists. If you are it's owner, you can change it's contents")
+                            btnConfirmChanges.setClickable(false)
+                        }
+                    }
+                }
+
+                Status.LOADING -> {
+
+                }
+
+                Status.ERROR -> {
+                    Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+                    Log.d("charityEdit", "setupObserverNameCheck: ${it.message}")
+                }
+            }
+        }
+
+    }
+
     private fun setupView(charity: Charity) {
         val view = binding.root
         setContentView(view)
 
         fragDesc = CharityCreateDesc.newInstance(charity.fullDescription)
-        fragCredentials = CharityCreatePaymentCredentials.newInstance(charity.paymentUrl?: "")
+        fragCredentials = CharityCreatePaymentCredentials.newInstance(charity.paymentUrl ?: "")
 
         binding.apply {
             ivChangeImage.setImageResource(R.drawable.ic_sync)
             if (!charity.photourl.isEmpty()) {
-                Picasso.with(this@CharityEditActivity).load(charity.photourl).fit().into(ivChangeImage)
+                Picasso.with(this@CharityEditActivity).load(charity.photourl).fit()
+                    .into(ivChangeImage)
             }
 
             etName.setText(charity.name)
@@ -122,11 +219,16 @@ class CharityEditActivity : AppCompatActivity() {
 
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
                 override fun afterTextChanged(s: Editable) {
-                    checkName()
+
+                    viewModel.checkName(binding.etName.getText().toString())
                 }
             })
 
-            imgbtnNameCheck.setOnClickListener { checkName() }
+            imgbtnNameCheck.setOnClickListener {
+                viewModel.checkName(
+                    binding.etName.getText().toString()
+                )
+            }
 
             relLayoutImage.setOnClickListener {
                 openImageChooser()
@@ -140,7 +242,7 @@ class CharityEditActivity : AppCompatActivity() {
             }
 
             btnDelete.setOnClickListener {
-                deleteOrganization()
+                viewModel.deleteCharity()
             }
 
             btnEditLocation.setOnClickListener {
@@ -153,7 +255,6 @@ class CharityEditActivity : AppCompatActivity() {
         }
     }
 
-
     private class MyPagerAdapter(fm: FragmentManager, val fragmentList: List<Fragment>) :
         FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int {
@@ -162,37 +263,6 @@ class CharityEditActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             return fragmentList[position]
-        }
-
-    }
-
-    private fun checkName() {
-        val checkingname: String = binding.etName.getText().toString()
-        if (checkingname == "") return
-        val rootRef = FirebaseFirestore.getInstance()
-        val docIdRef = rootRef.collection("charities").document(checkingname)
-        docIdRef.get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val document = task.result
-                if (document!!.exists() && checkingname != descChar.name) {
-                    Log.d("namechecker", "Document exists!")
-                    binding.apply {
-                        imgbtnNameCheck.setImageResource(R.drawable.ic_warning_foreground)
-                        tvCharityNameCheck.setText("charity with such name already exists. If you are it's owner, you can change it's contents")
-                        btnConfirmChanges.setClickable(false)
-                    }
-
-                } else {
-                    Log.d("namechecker", "Document does not exist!")
-                    binding.apply {
-                        imgbtnNameCheck.setImageResource(R.drawable.ic_check_foreground)
-                        tvCharityNameCheck.setText("charity with such name does not exist. You can create one!")
-                        btnConfirmChanges.setClickable(true)
-                    }
-                }
-            } else {
-                Log.d("namechecker", "Failed with: ", task.exception)
-            }
         }
     }
 
@@ -214,11 +284,6 @@ class CharityEditActivity : AppCompatActivity() {
             return false
         }
 
-        //GeoFire geoFire = new GeoFire(ref); //TODO geofire???
-        //if(etName.getText().toString().contains(" ")) {
-        //    Toast.makeText(context, "I am afraid your charity's name cannot contain space symbol", Toast.LENGTH_LONG).show();
-        //    return;
-        //}
         if (binding.etName.getText().toString().contains("/")) {
             Toast.makeText(
                 this,
@@ -227,9 +292,6 @@ class CharityEditActivity : AppCompatActivity() {
             ).show()
             return false
         }
-
-        // TODO: Проверять занятосьть имени, если занято, то не редактировать
-
         return true
     }
 
@@ -249,132 +311,14 @@ class CharityEditActivity : AppCompatActivity() {
         startActivityForResult(intent, 1)
     }
 
-    private fun deleteOrganization() {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("charities").document(descChar.firestoreID).delete()
-        finish()
-    }
-
     private fun btnConfirm() {
         if (validateFields()) {
-            confirmChanges()
+            val charity: MutableMap<String, Any> = HashMap()
+            charity["name"] = binding.etName.getText().toString()
+            charity["description"] = fragDesc.getText()
+            charity["qiwiurl"] = fragCredentials.getText()
+            viewModel.editCharity(charity)
         }
-    }
-
-    private fun createCharityWithID(id: String) {
-        var creatingChar = Charity()
-        creatingChar.firestoreID = id
-        creatingChar.name = binding.etName.getText().toString()
-        creatingChar.fullDescription = fragDesc.getText()
-        creatingChar.paymentUrl = fragCredentials.getText()
-        val db = FirebaseFirestore.getInstance()
-
-        val charity: MutableMap<String, Any> = HashMap()
-        val user = FirebaseAuth.getInstance().currentUser
-        charity["name"] = creatingChar.name
-        charity["description"] = creatingChar.fullDescription
-        charity["qiwiurl"] = creatingChar.paymentUrl
-        charity["creatorid"] = user!!.uid
-
-        Log.d("storageprogresstracker", "-1")
-        if (imageUri != null) {
-            Log.d("storageprogresstracker", "0")
-            val storage = FirebaseStorage.getInstance()
-            val storageRef = storage.reference
-            val file = loadedUri!! //Uri.fromFile(new File(pathtoimage));
-            val imgsref = storageRef.child("charities" + creatingChar.firestoreID + "/photo")
-            // TODO: Чистить папку перед добавлением фото(а может все само работает???)
-
-            val uploadTask = imgsref.putFile(file)
-            uploadTask.addOnFailureListener { exception -> // Handle unsuccessful uploads
-                Log.d("storageprogresstracker", "dam$exception")
-            }.addOnSuccessListener {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                // ...
-                Log.d("storageprogresstracker", "1")
-                storageRef.child("charities" + creatingChar.firestoreID + "/photo").downloadUrl.addOnSuccessListener { uri -> // Got the download URL for 'users/me/profile.png'
-                    Log.d("urlgetter", uri.toString())
-                    fileUrl = uri.toString()
-                    charity["photourl"] = fileUrl!!
-                    db.collection("charities").document(descChar.firestoreID)
-                        .set(charity).addOnSuccessListener {
-                            Toast.makeText(
-                                this,
-                                "Information was successfully edited",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            finish()
-                        }
-
-                    db.collection("charities").document(descChar.firestoreID).get()
-                        .addOnSuccessListener { documentSnapshot ->
-
-                            val data = documentSnapshot.data?.putAll(charity)
-                            if (data != null) {
-                                db.collection("charities").document(creatingChar.firestoreID).set(data).addOnSuccessListener {
-                                    Toast.makeText(
-                                        this,
-                                        "Information was successfully edited",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-                            if (charity["name"] != descChar.name) {
-                                db.collection("charities").document(descChar.firestoreID).delete()
-                            }
-                            finish()
-                        }
-                }.addOnFailureListener { exception -> // Handle any errors
-                    Log.d("storageprogresstracker", "2$exception")
-                }
-            }
-        } else {
-            Log.d("storageprogresstracker", "3")
-
-            db.collection("charities").document(descChar.firestoreID).get()
-                .addOnSuccessListener { documentSnapshot ->
-                    val data = documentSnapshot.data
-                    if (data != null) {
-                        data.putAll(charity)
-                    }
-                    Log.d("mytag", documentSnapshot.data.toString())
-
-                    if (data != null) {
-                        db.collection("charities").document(creatingChar.firestoreID).set(data).addOnSuccessListener {
-                            Toast.makeText(
-                                this,
-                                "Information was successfully edited",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }.addOnFailureListener { e ->
-                            Log.w(
-                                "Charitycreationlog",
-                                "Error writing document",
-                                e
-                            )
-                        }
-                    }
-                    if (charity["name"] != descChar.name) {
-                        db.collection("charities").document(descChar.firestoreID).delete()
-                    }
-                    finish()
-                }
-        }
-    }
-
-    private fun confirmChanges() {
-        Log.d("progresstracker", "createCharity")
-
-        val db = FirebaseFirestore.getInstance()
-        db.collection("charities")
-            .whereEqualTo("name", binding.etName.getText().toString()).get()
-            .addOnCompleteListener { task: Task<QuerySnapshot> ->
-                if (task.isSuccessful) {
-                    createCharityWithID(task.result.documents[0].id)
-                } else {
-                    createCharityWithID(Util.getRandomString(28))
-                }
-            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -399,11 +343,11 @@ class CharityEditActivity : AppCompatActivity() {
                         if (null != selectedImageUri) {
                             // Get the path from the Uri
                             imageUri = selectedImageUri
+                            viewModel.imageUri.postValue(selectedImageUri)
                             Log.i("imageloader", "Image URI : $imageUri")
                             // Set the image in ImageView
                             binding.ivChangeImage.post(Runnable {
                                 binding.ivChangeImage.setImageURI(selectedImageUri)
-                                loadedUri = selectedImageUri
                             })
                         }
                     }
@@ -412,6 +356,7 @@ class CharityEditActivity : AppCompatActivity() {
         }
     }
 
+    // TODO
     protected fun onLocatorActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (data == null) {
@@ -429,16 +374,25 @@ class CharityEditActivity : AppCompatActivity() {
     }
 
     fun onTagsActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
-        ctags["cart"] = data.getBooleanExtra("art", false)
-        ctags["ckids"] = data.getBooleanExtra("kids", false)
-        ctags["cpov"] = data.getBooleanExtra("poverty", false)
-        ctags["csci"] = data.getBooleanExtra("science&research", false)
-        ctags["cheal"] = data.getBooleanExtra("healthcare", false)
-        ctags["cedu"] = data.getBooleanExtra("education", false)
-        putTags()
+        val tags = mutableMapOf(
+            "art" to false,
+            "kids" to false,
+            "poverty" to false,
+            "science&research" to false,
+            "healthcare" to false,
+            "education" to false
+        )
+        tags["art"] = data.getBooleanExtra("art", false)
+        tags["kids"] = data.getBooleanExtra("kids", false)
+        tags["poverty"] = data.getBooleanExtra("poverty", false)
+        tags["science&research"] = data.getBooleanExtra("science&research", false)
+        tags["healthcare"] = data.getBooleanExtra("healthcare", false)
+        tags["education"] = data.getBooleanExtra("education", false)
+        viewModel.putTags(tags)
     }
 
 
+    // TODO добавить во вьюмодель
     fun putGeoQuery() {
         val db = FirebaseFirestore.getInstance()
         if (latitude > -990) {
@@ -529,42 +483,5 @@ class CharityEditActivity : AppCompatActivity() {
                     })
                 }
         }
-    }
-
-    fun putTags() {
-        val db = FirebaseFirestore.getInstance()
-        val namemap: Map<String, Any> = java.util.HashMap()
-        val tagsmap: MutableMap<String, Any> = java.util.HashMap()
-        if (ctags["cart"] == true) {
-            db.collection("tags").document("art").collection("list").document(descChar.firestoreID)
-                .set(namemap)
-            tagsmap["art"] = true
-        } else tagsmap["art"] = false
-        if (ctags["cpov"] == true) {
-            db.collection("tags").document("poverty").collection("list").document(descChar.firestoreID)
-                .set(namemap)
-            tagsmap["poverty"] = true
-        } else tagsmap["poverty"] = false
-        if (ctags["cedu"] == true) {
-            db.collection("tags").document("education").collection("list")
-                .document(descChar.firestoreID).set(namemap)
-            tagsmap["education"] = true
-        } else tagsmap["education"] = false
-        if (ctags["csci"] == true) {
-            db.collection("tags").document("science&research").collection("list")
-                .document(descChar.firestoreID).set(namemap)
-            tagsmap["science&research"] = true
-        } else tagsmap["science&research"] = false
-        if (ctags["ckids"] == true) {
-            db.collection("tags").document("children").collection("list")
-                .document(descChar.firestoreID).set(namemap)
-            tagsmap["children"] = true
-        } else tagsmap["children"] = false
-        if (ctags["cheal"] == true) {
-            db.collection("tags").document("healthcare").collection("list")
-                .document(descChar.firestoreID).set(namemap)
-            tagsmap["healthcare"] = true
-        } else tagsmap["healthcare"] = false
-        db.collection("charities").document(descChar.firestoreID).update(tagsmap)
     }
 }

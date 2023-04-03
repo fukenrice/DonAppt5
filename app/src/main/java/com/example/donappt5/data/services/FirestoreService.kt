@@ -146,4 +146,48 @@ object FirestoreService {
         ).set(data)
     }
 
+    fun putGeoQuery() {
+
+    }
+
+    fun putTags(id: String, tags: Map<String, Boolean>): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").document(id).update(tags)
+    }
+
+    fun uploadCharityImage(charityId: String, uri: Uri): UploadTask {
+        val db = FirebaseStorage.getInstance()
+        val storageRef = db.reference
+        val file = uri
+        val imgsref = storageRef.child("charities$charityId/photo")
+        return imgsref.putFile(file)
+    }
+
+    fun getImageUrl(charityId: String): Task<Uri> {
+        val db = FirebaseStorage.getInstance()
+        val storageRef = db.reference
+        return storageRef.child("charities$charityId/photo").downloadUrl
+    }
+
+    fun editCharity(id: String, fields: Map<String, Any>): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").document(id).update(fields)
+    }
+
+    fun deleteCharity(id: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").document(id).delete()
+    }
+
+    fun createCharity(id: String, fields: Map<String, Any>) {
+
+    }
+
+    fun checkName(name: String, currentName: String? = null): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").whereEqualTo("name", name).get()
+    }
+
+
+
 }
