@@ -15,12 +15,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.donappt5.R
 import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Status
+import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.viewmodels.ProfileViewModel
 import com.example.donappt5.views.charitylist.CharityListActivity
 import com.example.donappt5.views.onboarding.OnBoardingActivity
 import com.facebook.login.LoginManager
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.tasks.Task
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
@@ -29,13 +31,13 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var btnLogOut: Button
     lateinit var ctx: Context
     lateinit var btnLoadProfile: Button
-    lateinit var lvFriends: ListView
     lateinit var btnFavs: Button
     lateinit var tvUserName: TextView
     lateinit var btnChangeName: Button
     lateinit var viewModel: ProfileViewModel
     var ivProfile: ImageView? = null
     var SELECT_PICTURE = 12341
+    var bottomNavigationView: BottomNavigationView? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,6 +86,10 @@ class ProfileActivity : AppCompatActivity() {
         btnLoadProfile.setOnClickListener { FirestoreService.uploadImage(viewModel.loadedUri) }
         btnFavs = findViewById(R.id.btnFavs)
         btnFavs.setOnClickListener { onFavsClick() }
+
+        bottomNavigationView = findViewById<View>(R.id.bottom_navigation) as BottomNavigationView
+        MyGlobals(ctx).setupBottomNavigation(ctx, this, bottomNavigationView!!)
+
         val btnGoToOnboarding = findViewById<Button>(R.id.btnGoToOnboarding)
         btnGoToOnboarding.setOnClickListener {
             val intent = Intent(ctx, OnBoardingActivity::class.java)
