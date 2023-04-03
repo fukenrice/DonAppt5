@@ -376,7 +376,6 @@ public class CharityCreationActivity extends AppCompatActivity {
                                     .set(charity).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
-                                            putGeoQuery();
                                             putTags();
                                         }
                                     });
@@ -400,7 +399,6 @@ public class CharityCreationActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d("Charitycreationlog", "DocumentSnapshot successfully written!");
-                            putGeoQuery();
                             putTags();
                         }
                     })
@@ -443,85 +441,6 @@ public class CharityCreationActivity extends AppCompatActivity {
         } else tagsmap.put("healthcare", false);
 
         db.collection("charities").document(creatingChar.firestoreID).update(tagsmap);
-    }
-
-    void putGeoQuery() {
-        final FirebaseFirestore db = FirebaseFirestore.getInstance();
-        if (latitude > -990) {
-            Map<String, Object> location = new HashMap<String, Object>();
-            location.put("latitude", latitude);
-            location.put("longitude", longitude);
-
-            Log.d("geoquery", "Am I even here?4");
-            db.collection("charities").document(creatingChar.firestoreID).collection("locations").document("FirstLocation").set(location)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Log.d("geoquery", "Am I even here?3");
-                            CollectionReference colref = FirebaseFirestore.getInstance().collection("charities").document(creatingChar.firestoreID).collection("locations");
-                            GeoFire geoFirestore = new GeoFire(colref);
-                            geoFirestore.setLocation("FirstLocation", new GeoLocation(latitude, longitude));
-
-                            CollectionReference colref2 = FirebaseFirestore.getInstance().collection("charitylocations");
-                            Map<String, Object> creatingdoc = new HashMap<>();
-                            colref2.document(creatingChar.firestoreID).set(creatingdoc);
-                            GeoFire geoFirestore2 = new GeoFire(colref2);
-                            geoFirestore2.setLocation(creatingChar.firestoreID, new GeoLocation(latitude, longitude));
-
-                            Log.d("geoquery", "Am I even here?1");
-                            CollectionReference ref = FirebaseFirestore.getInstance().collection("userlocations");
-                            GeoFire geoFireuserlocation = new GeoFire(ref);
-                            GeoQuery geoQuery = geoFireuserlocation.queryAtLocation(new GeoLocation(latitude, longitude), 25);
-                            Log.d("geoquery", "Am I even here?2");
-                            geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
-
-                                @Override
-                                public void onKeyEntered(String key, GeoLocation location) {
-                                    System.out.println(String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
-                                    Log.d("geoquery", "entereddoc:" + key);
-
-                                    HashMap<String, Object> notification = new HashMap<String, Object>();
-                                    notification.put("notificationMessage", creatingChar.firestoreID);
-                                    notification.put("notificationTitle", "new charity created nearby");
-
-                                    FirebaseFirestore.getInstance().collection("users")
-                                            .document(key).collection("Notifications")
-                                            .document(creatingChar.firestoreID).set(notification);
-
-                                }
-
-                                @Override
-                                public void onKeyExited(String key) {
-                                    System.out.println(String.format("Key %s is no longer in the search area", key));
-                                    Log.d("geoquery", "exiteddoc:" + key);
-
-                                    HashMap<String, Object> notification = new HashMap<String, Object>();
-                                    notification.put("notificationMessage", creatingChar.firestoreID);
-                                    notification.put("notificationTitle", "new charity created nearby");
-
-                                    FirebaseFirestore.getInstance().collection("users")
-                                            .document(key).collection("Notifications")
-                                            .document(creatingChar.firestoreID).set(notification);
-                                }
-
-                                @Override
-                                public void onKeyMoved(String key, GeoLocation location) {
-                                    Log.d("geoquery", "moveddoc:" + key);
-                                }
-
-                                @Override
-                                public void onGeoQueryReady() {
-                                    Log.d("geoquery", "ready");
-                                }
-
-                                @Override
-                                public void onGeoQueryError(Exception exception) {
-                                    Log.d("geoquery", "dam:" + exception);
-                                }
-                            });
-                        }
-                    });
-        }
     }
 
     void onTagsActivityResult (int requestCode, int resultCode, Intent data) {

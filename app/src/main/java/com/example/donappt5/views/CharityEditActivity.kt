@@ -7,9 +7,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -26,17 +23,7 @@ import com.example.donappt5.databinding.ActivityCharityeditBinding
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.Status
 import com.example.donappt5.util.MyGlobals
-import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.CharityEditViewModel
-import com.example.donappt5.viewmodels.OnBoardingViewModel
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.storage.FirebaseStorage
-import com.koalap.geofirestore.GeoFire
-import com.koalap.geofirestore.GeoLocation
-import com.koalap.geofirestore.GeoQueryEventListener
 import com.squareup.picasso.Picasso
 
 class CharityEditActivity : AppCompatActivity() {
@@ -332,7 +319,7 @@ class CharityEditActivity : AppCompatActivity() {
             if (resultingactivity == "LocatorActivity") {
                 onLocatorActivityResult(requestCode, resultCode, data)
             } else if (resultingactivity == "TagsActivity") {
-                onTagsActivityResult(requestCode, resultCode, data)
+                onTagsActivityResult(data)
             }
         } else {
             Thread {
@@ -367,13 +354,12 @@ class CharityEditActivity : AppCompatActivity() {
         longitude = data.getDoubleExtra("longitude", 0.0)
         if (coordsgiven) {
             Toast.makeText(this, "lat: $latitude long: $longitude", Toast.LENGTH_LONG).show()
-            putGeoQuery()
         } else {
             Toast.makeText(this, "coordinates not given", Toast.LENGTH_SHORT).show()
         }
     }
 
-    fun onTagsActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    fun onTagsActivityResult(data: Intent) {
         val tags = mutableMapOf(
             "art" to false,
             "kids" to false,
@@ -389,99 +375,5 @@ class CharityEditActivity : AppCompatActivity() {
         tags["healthcare"] = data.getBooleanExtra("healthcare", false)
         tags["education"] = data.getBooleanExtra("education", false)
         viewModel.putTags(tags)
-    }
-
-
-    // TODO добавить во вьюмодель
-    fun putGeoQuery() {
-        val db = FirebaseFirestore.getInstance()
-        if (latitude > -990) {
-            val location: MutableMap<String, Any> = java.util.HashMap()
-            location["latitude"] = latitude
-            location["longitude"] = longitude
-            Log.d("geoquery", "Am I even here?4")
-            db.collection("charities").document(descChar.firestoreID).collection("locations")
-                .document("FirstLocation").set(location)
-                .addOnSuccessListener {
-                    Log.d("geoquery", "Am I even here?3")
-                    val colref =
-                        FirebaseFirestore.getInstance().collection("charities")
-                            .document(descChar.firestoreID)
-                            .collection("locations")
-                    val geoFirestore = GeoFire(colref)
-                    geoFirestore.setLocation(
-                        "FirstLocation",
-                        GeoLocation(latitude, longitude)
-                    )
-                    val colref2 = FirebaseFirestore.getInstance().collection("charitylocations")
-                    val creatingdoc: Map<String, Any> =
-                        java.util.HashMap()
-                    colref2.document(descChar.firestoreID).set(creatingdoc)
-                    val geoFirestore2 = GeoFire(colref2)
-                    geoFirestore2.setLocation(
-                        descChar.firestoreID,
-                        GeoLocation(latitude, longitude)
-                    )
-                    Log.d("geoquery", "Am I even here?1")
-                    val ref = FirebaseFirestore.getInstance().collection("userlocations")
-                    val geoFireuserlocation = GeoFire(ref)
-                    val geoQuery = geoFireuserlocation.queryAtLocation(
-                        GeoLocation(
-                            latitude,
-                            longitude
-                        ), 25.0
-                    )
-                    Log.d("geoquery", "Am I even here?2")
-                    geoQuery.addGeoQueryEventListener(object :
-                        GeoQueryEventListener {
-                        override fun onKeyEntered(
-                            key: String,
-                            location: GeoLocation
-                        ) {
-                            println(
-                                String.format(
-                                    "Key %s entered the search area at [%f,%f]",
-                                    key,
-                                    location.latitude,
-                                    location.longitude
-                                )
-                            )
-                            Log.d("geoquery", "entereddoc:$key")
-                            val notification = java.util.HashMap<String, Any>()
-                            notification["notificationMessage"] = descChar.name
-                            notification["notificationTitle"] = "new charity created nearby"
-                            FirebaseFirestore.getInstance().collection("users")
-                                .document(key).collection("Notifications")
-                                .document(descChar.firestoreID).set(notification)
-                        }
-
-                        override fun onKeyExited(key: String) {
-                            println(String.format("Key %s is no longer in the search area", key))
-                            Log.d("geoquery", "exiteddoc:$key")
-                            val notification = java.util.HashMap<String, Any>()
-                            notification["notificationMessage"] = descChar.name
-                            notification["notificationTitle"] = "new charity created nearby"
-                            FirebaseFirestore.getInstance().collection("users")
-                                .document(key).collection("Notifications")
-                                .document(descChar.firestoreID).set(notification)
-                        }
-
-                        override fun onKeyMoved(
-                            key: String,
-                            location: GeoLocation
-                        ) {
-                            Log.d("geoquery", "moveddoc:$key")
-                        }
-
-                        override fun onGeoQueryReady() {
-                            Log.d("geoquery", "ready")
-                        }
-
-                        override fun onGeoQueryError(exception: Exception) {
-                            Log.d("geoquery", "dam:$exception")
-                        }
-                    })
-                }
-        }
     }
 }
