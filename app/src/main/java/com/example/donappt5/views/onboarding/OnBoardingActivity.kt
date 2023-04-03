@@ -1,5 +1,7 @@
 package com.example.donappt5.views.onboarding
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -12,7 +14,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.donappt5.databinding.ActivityOnBoardingBinding
 import com.example.donappt5.data.model.OnBoardingDonationRecord
 import com.example.donappt5.data.util.Status
+import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.viewmodels.OnBoardingViewModel
+import com.example.donappt5.views.charitylist.CharityListActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.serialization.decodeFromString
@@ -35,6 +40,7 @@ class OnBoardingActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[OnBoardingViewModel::class.java]
         setupObserver()
         setContentView(view)
+        MyGlobals(baseContext).setupBottomNavigation(baseContext, this, binding.bottomNavigation)
     }
 
     fun setupObserver() {
@@ -99,6 +105,8 @@ class OnBoardingActivity : AppCompatActivity() {
         binding.apply {
             btnConfirmChanges.setOnClickListener {
                 confirmChanges()
+                val intent = Intent(baseContext, CharityListActivity::class.java)
+                startActivity(intent)
             }
 
             ChangePager.adapter =
