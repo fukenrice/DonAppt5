@@ -94,7 +94,6 @@ public class CharityCreationActivity extends AppCompatActivity {
 
     CharityCreateDesc fragdesc;
     CharityCreatePaymentCredentials fragcred;
-    CharityCreateGoals fraggoal;
     Button btnCreate;
     double latitude = -1000;
     double longitude = -1000;
@@ -127,7 +126,6 @@ public class CharityCreationActivity extends AppCompatActivity {
         });
         fragdesc = CharityCreateDesc.newInstance("");
         fragcred = CharityCreatePaymentCredentials.Companion.newInstance("");
-        fraggoal = new CharityCreateGoals();
         tvState = findViewById(R.id.tvState);
         pager = findViewById(R.id.ChangePager);
 
@@ -579,14 +577,13 @@ public class CharityCreationActivity extends AppCompatActivity {
 
                 case 0: return fragdesc;
                 case 1: return fragcred;
-                case 2: return fraggoal;
                 default: return fragdesc;
             }
         }
 
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
     }
 

@@ -40,6 +40,7 @@ class OwnedCharityListActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         myGlobals.setSelectedItem(this, binding.bottomNavigation)
+        viewModel.fillData()
     }
 
     private fun setupObserver() {

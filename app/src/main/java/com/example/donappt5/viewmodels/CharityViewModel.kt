@@ -3,7 +3,7 @@ package com.example.donappt5.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.donappt5.data.model.Analytics
+import com.example.donappt5.data.services.Analytics
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Response

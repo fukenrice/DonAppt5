@@ -55,10 +55,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service
-            android:name=".data.services.MyFirebaseInstanceIDService"
-            android:enabled="true"
-            android:exported="true" />
         <activity
             android:name=".views.charitycreation.popups.TagsActivity"
             android:label="tags" />

@@ -8,14 +8,11 @@ import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.example.donappt5.data.model.User
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
-import com.squareup.picasso.Picasso
-import kotlinx.coroutines.tasks.await
 
 object FirestoreService {
     private const val TAG = "FirestoreService"
@@ -89,7 +86,7 @@ object FirestoreService {
         }
     }
 
-    fun getPhotoUrl(): Task<DocumentSnapshot> {
+    fun getUserData(): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
         val user = FirebaseAuth.getInstance().currentUser
         return db.collection("users").document(user!!.uid).get()
@@ -174,4 +171,45 @@ object FirestoreService {
         db.collection("users").document(user.uid)
             .set(usermap)
     }
+
+    fun putTags(id: String, tags: Map<String, Boolean>): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").document(id).update(tags)
+    }
+
+    fun uploadCharityImage(charityId: String, uri: Uri): UploadTask {
+        val db = FirebaseStorage.getInstance()
+        val storageRef = db.reference
+        val file = uri
+        val imgsref = storageRef.child("charities$charityId/photo")
+        return imgsref.putFile(file)
+    }
+
+    fun getImageUrl(charityId: String): Task<Uri> {
+        val db = FirebaseStorage.getInstance()
+        val storageRef = db.reference
+        return storageRef.child("charities$charityId/photo").downloadUrl
+    }
+
+    fun editCharity(id: String, fields: Map<String, Any>): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").document(id).update(fields)
+    }
+
+    fun deleteCharity(id: String): Task<Void> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").document(id).delete()
+    }
+
+    fun createCharity(id: String, fields: Map<String, Any>) {
+
+    }
+
+    fun checkName(name: String, currentName: String? = null): Task<QuerySnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("charities").whereEqualTo("name", name).get()
+    }
+
+
+
 }

@@ -1,4 +1,4 @@
-package com.example.donappt5.data.model
+package com.example.donappt5.data.services
 
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics

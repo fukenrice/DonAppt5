@@ -18,11 +18,12 @@
  *
  */
 
-package com.example.donappt5.data.model
+package com.example.donappt5.data.services
 
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.util.ModelConfig
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions
