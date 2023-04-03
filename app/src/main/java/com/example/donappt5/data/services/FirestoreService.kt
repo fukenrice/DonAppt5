@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
+import com.example.donappt5.data.model.User
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
@@ -40,13 +41,13 @@ object FirestoreService {
         } else {
             db.collection("charities")
         }
-        if (lastVisible != null) {
-            return taggedquery
+        return if (lastVisible != null) {
+            taggedquery
                 .startAfter(lastVisible!!)
                 .limit(20)
                 .get()
         } else {
-            return taggedquery
+            taggedquery
                 .limit(20)
                 .get()
         }
@@ -76,13 +77,13 @@ object FirestoreService {
         val user = FirebaseAuth.getInstance().currentUser
         val query = db.collection("charities").whereEqualTo("creatorid", user!!.uid)
 
-        if (lastVisible != null) {
-            return query
+        return if (lastVisible != null) {
+            query
                 .startAfter(lastVisible!!)
                 .limit(20)
                 .get()
         } else {
-            return query
+            query
                 .limit(20)
                 .get()
         }
@@ -152,4 +153,25 @@ object FirestoreService {
         ).set(data)
     }
 
+    fun getUser(userId: String): Task<DocumentSnapshot> {
+        val db = FirebaseFirestore.getInstance()
+        return db.collection("users").document(userId).get()
+    }
+
+    fun setUser(user: User) {
+        val usermap: MutableMap<String, Any> =
+            java.util.HashMap()
+        if (user.username != null) {
+            usermap["name"] = user.username!!
+        }
+        if (user.email != null) {
+            usermap["mail"] = user.email!!
+        }
+        if (user.photoUrl != null) {
+            usermap["photo"] = user.photoUrl.toString()
+        }
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users").document(user.uid)
+            .set(usermap)
+    }
 }
