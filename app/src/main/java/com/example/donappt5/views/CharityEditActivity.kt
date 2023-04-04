@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -21,9 +24,20 @@ import com.example.donappt5.views.charitycreation.popups.TagsActivity
 import com.example.donappt5.R
 import com.example.donappt5.databinding.ActivityCharityeditBinding
 import com.example.donappt5.data.model.Charity
+import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Status
 import com.example.donappt5.util.MyGlobals
+import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.CharityEditViewModel
+import com.example.donappt5.viewmodels.OnBoardingViewModel
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.storage.FirebaseStorage
+import com.koalap.geofirestore.GeoFire
+import com.koalap.geofirestore.GeoLocation
+import com.koalap.geofirestore.GeoQueryEventListener
 import com.squareup.picasso.Picasso
 
 class CharityEditActivity : AppCompatActivity() {
@@ -45,7 +59,6 @@ class CharityEditActivity : AppCompatActivity() {
     lateinit var fragCredentials: CharityCreatePaymentCredentials
 
     //lateinit var pager: ViewPager
-    var SELECT_PICTURE = 2878
     var imageUri: Uri? = null
 
 
@@ -71,6 +84,12 @@ class CharityEditActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[CharityEditViewModel::class.java]
         viewModel.charity = descChar
 
+        viewModel.imageUri.observe(this) {
+            binding.ivChangeImage.post(Runnable {
+                binding.ivChangeImage.setImageURI(it)
+            })
+        }
+
         setupObserver()
         setupView(descChar)
     }
@@ -82,7 +101,7 @@ class CharityEditActivity : AppCompatActivity() {
     }
 
     private fun setupObserver() {
-        viewModel.edited.observe(this, Observer {
+        viewModel.edited.observe(this) {
             when (it.status) {
                 Status.SUCCESS -> {
                     Toast.makeText(
@@ -98,11 +117,15 @@ class CharityEditActivity : AppCompatActivity() {
                 }
 
                 Status.ERROR -> {
-                    Toast.makeText(this, "An error occurred while editing the charity.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "An error occurred while editing the charity.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     Log.d("charityEdit", "setupObserverEdited: ${it.message}")
                 }
             }
-        })
+        }
 
         viewModel.tags.observe(this) {
             when (it.status) {
@@ -206,7 +229,6 @@ class CharityEditActivity : AppCompatActivity() {
 
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
                 override fun afterTextChanged(s: Editable) {
-
                     viewModel.checkName(binding.etName.getText().toString())
                 }
             })
@@ -242,6 +264,14 @@ class CharityEditActivity : AppCompatActivity() {
         }
     }
 
+    /* Choose an image from Gallery */
+    fun openImageChooser() {
+        val intent = Intent()
+        intent.type = "image/*"
+        intent.action = Intent.ACTION_GET_CONTENT
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), viewModel.SELECT_PICTURE)
+    }
+
     private class MyPagerAdapter(fm: FragmentManager, val fragmentList: List<Fragment>) :
         FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount(): Int {
@@ -254,12 +284,6 @@ class CharityEditActivity : AppCompatActivity() {
     }
 
     /* Choose an image from Gallery */
-    fun openImageChooser() {
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), SELECT_PICTURE)
-    }
 
     private fun validateFields(): Boolean {
         if (binding.etName.text.isEmpty()) {
@@ -310,70 +334,7 @@ class CharityEditActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (data == null) {
-            return
-        }
-        val resultingactivity = data.getStringExtra("resultingactivity")
-        Log.d("progresstracker", "resulted activity $resultingactivity")
-        if (resultingactivity != null) {
-            if (resultingactivity == "LocatorActivity") {
-                onLocatorActivityResult(requestCode, resultCode, data)
-            } else if (resultingactivity == "TagsActivity") {
-                onTagsActivityResult(data)
-            }
-        } else {
-            Thread {
-                if (resultCode == RESULT_OK) {
-                    if (requestCode == SELECT_PICTURE) {
-                        // Get the url from data
-                        val selectedImageUri = data.data
-                        if (null != selectedImageUri) {
-                            // Get the path from the Uri
-                            imageUri = selectedImageUri
-                            viewModel.imageUri.postValue(selectedImageUri)
-                            Log.i("imageloader", "Image URI : $imageUri")
-                            // Set the image in ImageView
-                            binding.ivChangeImage.post(Runnable {
-                                binding.ivChangeImage.setImageURI(selectedImageUri)
-                            })
-                        }
-                    }
-                }
-            }.start()
-        }
+        viewModel.onActivityResult(requestCode, resultCode, data)
     }
 
-    // TODO
-    protected fun onLocatorActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (data == null) {
-            return
-        }
-        val coordsgiven = data.getBooleanExtra("locationgiven", false)
-        latitude = data.getDoubleExtra("latitude", 0.0)
-        longitude = data.getDoubleExtra("longitude", 0.0)
-        if (coordsgiven) {
-            Toast.makeText(this, "lat: $latitude long: $longitude", Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(this, "coordinates not given", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    fun onTagsActivityResult(data: Intent) {
-        val tags = mutableMapOf(
-            "art" to false,
-            "kids" to false,
-            "poverty" to false,
-            "science&research" to false,
-            "healthcare" to false,
-            "education" to false
-        )
-        tags["art"] = data.getBooleanExtra("art", false)
-        tags["kids"] = data.getBooleanExtra("kids", false)
-        tags["poverty"] = data.getBooleanExtra("poverty", false)
-        tags["science&research"] = data.getBooleanExtra("science&research", false)
-        tags["healthcare"] = data.getBooleanExtra("healthcare", false)
-        tags["education"] = data.getBooleanExtra("education", false)
-        viewModel.putTags(tags)
-    }
 }

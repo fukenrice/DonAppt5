@@ -5,7 +5,9 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.donappt5.data.model.Charity.Companion.toCharity
 import com.example.donappt5.data.model.MyClusterItem
+import com.example.donappt5.data.services.FirestoreService
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,6 +16,7 @@ import com.koalap.geofirestore.GeoFire
 import com.koalap.geofirestore.GeoLocation
 import com.koalap.geofirestore.GeoQuery
 import com.koalap.geofirestore.GeoQueryEventListener
+
 
 class CharitiesMapViewModel() : ViewModel() {
     private val earthCircumferenceMeters = 40075000.0
@@ -78,9 +81,13 @@ class CharitiesMapViewModel() : ViewModel() {
                 )
                 if (!loadedchars!!.contains(key)) {
                     loadedchars!!.add(key)
-                    val offsetItem =
-                        MyClusterItem(location.latitude, location.longitude, key, "snippet")
-                    mClusterManager.value?.addItem(offsetItem)
+                    FirestoreService.getCharityData(key)?.addOnSuccessListener {
+                        if (it != null) {
+                            val offsetItem =
+                                MyClusterItem(location.latitude, location.longitude, it.toCharity()?.name, "snippet")
+                            mClusterManager.value?.addItem(offsetItem)
+                        }
+                    }
                 }
             }
 

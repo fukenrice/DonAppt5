@@ -13,6 +13,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
+import com.koalap.geofirestore.GeoFire
+import com.koalap.geofirestore.GeoLocation
 
 object FirestoreService {
     private const val TAG = "FirestoreService"
@@ -153,6 +155,18 @@ object FirestoreService {
     fun getUser(userId: String): Task<DocumentSnapshot> {
         val db = FirebaseFirestore.getInstance()
         return db.collection("users").document(userId).get()
+    }
+
+    fun setCharityLocation(charityId: String, location: GeoLocation) {
+        val collectionReference = FirebaseFirestore.getInstance().collection("charitylocations")
+        val creatingLocation: Map<String, Any> = java.util.HashMap()
+        collectionReference.document(charityId).set(creatingLocation)
+
+        val geoFirestore = GeoFire(collectionReference)
+        geoFirestore.setLocation(
+            charityId,
+            location
+        )
     }
 
     fun setUser(user: User) {

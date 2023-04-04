@@ -65,11 +65,13 @@ class Charity {
     }
 
     constructor() {
-        name = "defaultconstructor"
-        briefDescription = "defaultconstructor"
-        fullDescription = "defaultconstructor"
+        name = "enter charity name here"
+        briefDescription = "enter your charity description here"
+        fullDescription = "enter your charity description here, enter qiwi url on the page to the right"
         trust = -1f
         id = -2
+        paymentUrl = ""
+        photourl = ""
     }
 
     constructor(document: DocumentSnapshot?) {
