@@ -22,7 +22,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.squareup.picasso.Picasso
 
 class CharityActivity : AppCompatActivity() {
-    lateinit var descChar: Charity
     lateinit var ctx: Context
     var pagerAdapter: PagerAdapter? = null
     var myGlobals: MyGlobals? = null
@@ -115,8 +114,7 @@ class CharityActivity : AppCompatActivity() {
             btnDonate.setOnClickListener {
                 viewModel.logAnalytics()
 
-                if (descChar.paymentUrl != "" && viewModel.getCharity().value?.data?.paymentUrl != null
-                ) {
+                if (viewModel.getCharity().value?.data?.paymentUrl != null) {
                     val intent1 = Intent(ctx, QiwiPaymentActivity::class.java)
                     intent1.putExtra("firestoreID", viewModel.getCharity().value?.data?.firestoreID)
                     intent1.putExtra("charityname", viewModel.getCharity().value?.data?.name)
