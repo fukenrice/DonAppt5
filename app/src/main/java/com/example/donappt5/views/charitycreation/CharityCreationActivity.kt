@@ -1,6 +1,4 @@
 package com.example.donappt5.views.charitycreation
-//import com.firebase.geofire.GeoFire;
-//import com.squareup.picasso.Picasso;
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -59,8 +57,6 @@ class CharityCreationActivity : AppCompatActivity() {
     var TAGS_COUNT = 6
 
     lateinit var binding: ActivityCharitycreationBinding
-    lateinit var pager: ViewPager
-    var tvState: TextView? = null
     var creatingChar: Charity? = null
     var cart = 0
     var ckids = 1
