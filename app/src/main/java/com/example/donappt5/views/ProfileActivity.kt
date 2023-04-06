@@ -128,6 +128,7 @@ class ProfileActivity : AppCompatActivity() {
         val input = EditText(this)
         input.inputType = InputType.TYPE_CLASS_TEXT
         builder.setView(input)
+        builder.setTitle("Enter your username")
         builder.setPositiveButton("OK") { _: DialogInterface?, _: Int ->
             val user = FirebaseAuth.getInstance().currentUser
             val ans = input.text.toString()

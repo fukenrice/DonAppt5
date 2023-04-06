@@ -56,4 +56,5 @@
     <string name="map">map</string>
     <string name="donations">donations</string>
     <string name="profile">profile</string>
+    <string name="user_name_is_not_set">User name is not set</string>
 </resources>
