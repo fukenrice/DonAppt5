@@ -71,7 +71,6 @@ class CharityCreationActivity : AppCompatActivity() {
     var fragCredentials: CharityCreatePaymentCredentials? = null
     var latitude = -1000.0
     var longitude = -1000.0
-    var myGlobals: MyGlobals? = null
     lateinit var viewModel: CharityEditViewModel
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,7 +79,6 @@ class CharityCreationActivity : AppCompatActivity() {
         binding = ActivityCharitycreationBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this)[CharityEditViewModel::class.java]
         context = this
-        myGlobals?.setupBottomNavigation(context, this, binding.bottomNavigation)
 
         viewModel.charity = Charity()
 
