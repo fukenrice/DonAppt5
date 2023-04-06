@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Point
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +17,15 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.ViewModelProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.transition.Slide
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.example.donappt5.R
-import com.example.donappt5.views.adapters.CharityAdapter
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.viewmodels.ProgramEntryViewModel
-import com.example.donappt5.views.charitycreation.CharityCreationActivity
+import com.example.donappt5.views.adapters.CharityAdapter
 import com.example.donappt5.views.charitycreation.popups.ActivityConfirm
 import com.example.donappt5.views.charitycreation.popups.LocatorActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -54,7 +56,7 @@ class CharityListActivity : AppCompatActivity() {
     lateinit var pager: ViewPager
     var pagerAdapter: PagerAdapter? = null
     var bottomNavigationView: BottomNavigationView? = null
-    lateinit var fabAddCharity: FloatingActionButton
+    lateinit var fabSearch: FloatingActionButton
     lateinit var viewModel: ProgramEntryViewModel
     /**
      * Called when the activity is first created.
@@ -80,10 +82,13 @@ class CharityListActivity : AppCompatActivity() {
             pagerAdapter!!.notifyDataSetChanged()
             pullToRefresh.isRefreshing = false
         }
-        fabAddCharity = findViewById(R.id.fab)
-        fabAddCharity.setOnClickListener {
-            val intent = Intent(ctx, CharityCreationActivity::class.java)
-            startActivity(intent)
+        fabSearch = findViewById(R.id.fab)
+        fabSearch.setOnClickListener {
+            val searchDialog = SearchDialogFragment(fabSearch.size / 2)
+            searchDialog.enterTransition = Slide(Gravity.BOTTOM);
+            searchDialog.exitTransition = Slide(Gravity.TOP);
+            searchDialog.dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));
+            searchDialog.show(supportFragmentManager, "search_dialog")
         }
 
         // создаем адаптер

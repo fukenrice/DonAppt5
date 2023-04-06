@@ -3,10 +3,11 @@
     <color name="colorPrimary">#FFFFFF</color>
     <color name="colorOnPrimary">#000000</color>
     <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorTextPrimary">#008577</color>
+    <color name="colorTextPrimary">#1D9000</color>
     <color name="toolbar_orange">#FF9429</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorBackgroundMain">#F5E3D9</color>
+    <color name="colorBackgroundSecondary">#D9D9D9</color>
     <color name="colorSelectedTextHighlight">#1D9000</color>
     <color name="colorFab">#6AC154</color>
     <color name="colorFillUnloaded">#D9D9D9</color>
