@@ -88,7 +88,7 @@ class CharityCreationActivity : AppCompatActivity() {
             })
         }
         setupObserver()
-        setupView(Charity())
+        setupView()
     }
 
     fun loadImage() {
@@ -197,21 +197,15 @@ class CharityCreationActivity : AppCompatActivity() {
 
     }
 
-    private fun setupView(charity: Charity) {
+    private fun setupView() {
         val view = binding.root
         setContentView(view)
 
-        fragDesc = CharityCreateDesc.newInstance(charity.fullDescription)
-        fragCredentials = CharityCreatePaymentCredentials.newInstance(charity.paymentUrl ?: "")
+        fragDesc = CharityCreateDesc.newInstance("")
+        fragCredentials = CharityCreatePaymentCredentials.newInstance("")
 
         binding.apply {
             ivChangeImage.setImageResource(R.drawable.ic_sync)
-            if (!charity.photourl.isEmpty()) {
-                Picasso.with(this@CharityCreationActivity).load(charity.photourl).fit()
-                    .into(ivChangeImage)
-            }
-
-            etName.setText(charity.name)
 
             etName.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(
@@ -225,12 +219,12 @@ class CharityCreationActivity : AppCompatActivity() {
 
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
                 override fun afterTextChanged(s: Editable) {
-                    viewModel.checkName(binding.etName.getText().toString())
+                    viewModel.checkCreationName(binding.etName.getText().toString())
                 }
             })
 
             imgbtnNameCheck.setOnClickListener {
-                viewModel.checkName(
+                viewModel.checkCreationName(
                     binding.etName.getText().toString()
                 )
             }
@@ -449,7 +443,7 @@ class CharityCreationActivity : AppCompatActivity() {
                 .document(creatingChar!!.firestoreID).set(namemap)
             tagsmap["healthcare"] = true
         } else tagsmap["healthcare"] = false
-        db.collection("charities").document(creatingChar!!.firestoreID).update(tagsmap)
+        db.collection("charities").document(creatingChar!!.firestoreID).update(tagsmap).addOnSuccessListener { finish() }
     }
 
     fun onTagsActivityResult(requestCode: Int, resultCode: Int, data: Intent) {

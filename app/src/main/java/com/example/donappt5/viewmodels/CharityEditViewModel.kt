@@ -84,6 +84,18 @@ class CharityEditViewModel : ViewModel() {
         }
     }
 
+    fun checkCreationName(name: String) {
+        repo.checkName(name).addOnCompleteListener() {
+            if (it.isSuccessful) {
+                if (it.result.size() != 0) {
+                    isNameFree.postValue(Response.success(false))
+                } else {
+                    isNameFree.postValue(Response.success(true))
+                }
+            }
+        }
+    }
+
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (data == null) {
             return
