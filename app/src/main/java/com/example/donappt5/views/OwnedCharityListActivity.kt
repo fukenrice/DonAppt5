@@ -16,6 +16,7 @@ import com.example.donappt5.data.model.Charity
 import com.example.donappt5.util.MyGlobals
 import com.example.donappt5.data.util.Status
 import com.example.donappt5.viewmodels.OwnedCharityListVeiwModel
+import com.example.donappt5.views.charitycreation.CharityCreationActivity
 
 class OwnedCharityListActivity : AppCompatActivity() {
 
@@ -116,6 +117,11 @@ class OwnedCharityListActivity : AppCompatActivity() {
                     intent.putExtra("qiwiPaymentUrl", clickedCharity.paymentUrl)
                     startActivity(intent)
                 }
+
+            addFab.setOnClickListener {
+                val intent = Intent(this@OwnedCharityListActivity, CharityCreationActivity::class.java)
+                startActivity(intent)
+            }
         }
 
 
