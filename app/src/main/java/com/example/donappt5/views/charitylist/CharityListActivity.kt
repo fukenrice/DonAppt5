@@ -24,6 +24,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.example.donappt5.R
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.util.MyGlobals
+import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.ProgramEntryViewModel
 import com.example.donappt5.views.adapters.CharityAdapter
 import com.example.donappt5.views.charitycreation.popups.ActivityConfirm
@@ -36,9 +37,7 @@ import com.koalap.geofirestore.GeoQuery
 //import com.google.firebase.analytics.FirebaseAnalytics;
 //TODO in general: change support mail in firebase console settings AND project name
 class CharityListActivity : AppCompatActivity() {
-    private val preLast = 0
     var chars = ArrayList<Charity>()
-    var geochars = ArrayList<String>()
     var charAdapter: CharityAdapter? = null
     lateinit var ctx: Context
 
@@ -48,10 +47,8 @@ class CharityListActivity : AppCompatActivity() {
     private val prelast = 0
     var fillingData = false
     var fillingmode = 0
-    var fdistance = 0
     var myGlobals: MyGlobals? = null
     var queryInput: String? = null
-    lateinit var fillingQuery: GeoQuery
     var tag = "none"
     lateinit var pager: ViewPager
     var pagerAdapter: PagerAdapter? = null
@@ -67,9 +64,18 @@ class CharityListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_charitylist)
         viewModel = ViewModelProvider(this)[ProgramEntryViewModel::class.java]
         ctx = this
+        fillingmode = intent.getIntExtra("fillingmode", Util.FILLING_ALPHABET)
+        setupObserver()
+        setupView()
+    }
+
+    fun setupObserver() {
         viewModel.userHasLocationsOfInterest.observe(this) { data ->
-            launchLocatorActivity()
+//            launchLocatorActivity()
         }
+    }
+
+    fun setupView() {
         pullToRefresh = findViewById(R.id.pullToRefresh)
         pullToRefresh.setOnRefreshListener {
             val selectedItem = pager.currentItem
@@ -120,6 +126,7 @@ class CharityListActivity : AppCompatActivity() {
         bottomNavigationView = findViewById<View>(R.id.bottom_navigation) as BottomNavigationView
         myGlobals!!.setupBottomNavigation(ctx, this, bottomNavigationView!!)
     }
+
 
     fun toggleRefreshing(enabled: Boolean) {
         pullToRefresh.isEnabled = enabled
