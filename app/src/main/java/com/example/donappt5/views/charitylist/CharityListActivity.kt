@@ -71,7 +71,7 @@ class CharityListActivity : AppCompatActivity() {
 
     fun setupObserver() {
         viewModel.userHasLocationsOfInterest.observe(this) { data ->
-            launchLocatorActivity()
+//            launchLocatorActivity()
         }
     }
 
