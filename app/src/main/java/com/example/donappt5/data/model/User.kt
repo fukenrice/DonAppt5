@@ -8,7 +8,7 @@ class User(var username: String?, var email: String?, var photoUrl: Uri?, var ui
         fun DocumentSnapshot.toUser(): User {
             return User(this.data?.get("name") as String?,
                         this.data?.get("mail") as String?,
-                        Uri.parse(this.data?.get("photourl") as String?),
+                        Uri.parse(this.data?.get("photourl") as String??: ""),
                         this.id)
         }
     }

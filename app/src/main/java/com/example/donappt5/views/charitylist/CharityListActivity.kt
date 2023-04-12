@@ -26,6 +26,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.example.donappt5.R
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.util.MyGlobals
+import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.CharityListViewModel
 import com.example.donappt5.viewmodels.ProgramEntryViewModel
 import com.example.donappt5.views.adapters.CharityAdapter
@@ -40,9 +41,7 @@ import com.koalap.geofirestore.GeoQuery
 //import com.google.firebase.analytics.FirebaseAnalytics;
 //TODO in general: change support mail in firebase console settings AND project name
 class CharityListActivity : AppCompatActivity() {
-    private val preLast = 0
     var chars = ArrayList<Charity>()
-    var geochars = ArrayList<String>()
     var charAdapter: CharityAdapter? = null
     lateinit var ctx: Context
 
@@ -52,10 +51,8 @@ class CharityListActivity : AppCompatActivity() {
     private val prelast = 0
     var fillingData = false
     var fillingmode = 0
-    var fdistance = 0
     var myGlobals: MyGlobals? = null
     var queryInput: String? = null
-    lateinit var fillingQuery: GeoQuery
     var tag = "none"
     lateinit var pager: ViewPager
     var pagerAdapter: PagerAdapter? = null
@@ -131,6 +128,7 @@ class CharityListActivity : AppCompatActivity() {
         pager.adapter = pagerAdapter
     }
 
+
     fun toggleRefreshing(enabled: Boolean) {
         pullToRefresh.isEnabled = enabled
     }
@@ -190,11 +188,6 @@ class CharityListActivity : AppCompatActivity() {
 
     private inner class MyPagerAdapter(fm: FragmentManager?) :
         FragmentStatePagerAdapter(fm!!) {
-        private var currentFragment: Fragment? = null
-
-        fun getCurrentFragment(): Fragment? {
-            return currentFragment
-        }
 
         override fun getItem(pos: Int): Fragment {
             return when (pos) {
@@ -205,13 +198,6 @@ class CharityListActivity : AppCompatActivity() {
 
         override fun getCount(): Int {
             return 2
-        }
-
-        override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
-            if (getCurrentFragment() !== `object`) {
-                currentFragment = `object` as Fragment
-            }
-            super.setPrimaryItem(container, position, `object`)
         }
     }
 

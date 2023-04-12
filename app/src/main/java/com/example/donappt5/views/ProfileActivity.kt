@@ -16,6 +16,7 @@ import com.example.donappt5.R
 import com.example.donappt5.data.services.FirestoreService
 import com.example.donappt5.data.util.Status
 import com.example.donappt5.util.MyGlobals
+import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.ProfileViewModel
 import com.example.donappt5.views.charitylist.CharityListActivity
 import com.example.donappt5.views.onboarding.OnBoardingActivity
@@ -99,7 +100,7 @@ class ProfileActivity : AppCompatActivity() {
 
     fun onFavsClick() {
         val intent = Intent(ctx, CharityListActivity::class.java)
-        intent.putExtra("fillingfavorites", true)
+        intent.putExtra("fillingmode", Util.FILLING_FAVORITES)
         startActivity(intent)
     }
 
