@@ -13,38 +13,31 @@ import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 
-class CharityListViewModel : ViewModel() {
+class CharityListViewModel() : ViewModel() {
     var chars = MutableLiveData<Response<ArrayList<Charity>>>()
-    var fillingmode = 0
     var preLast = 0
     var fillingData = false
     var lastVisible = MutableLiveData<DocumentSnapshot?>()
     val repo: FirestoreService = FirestoreService
     var searchContext = MutableLiveData<SearchContext>()
-
-    init {
-        chars.postValue(Response.loading(arrayListOf()))
-        fillData()
-    }
+    var fillingmode = 0
 
 
     fun fillData() {
         Log.d("fillingmode", fillingmode.toString())
         if (fillingmode == Util.FILLING_ALPHABET) {
             fillPaginatedData()
-        } else if (fillingmode == Util.FILLING_SEARCH) {
-            return
-        } else if (fillingmode == Util.FILLING_DISTANCE) {
-//            fillDistanceData()
         } else if (fillingmode == Util.FILLING_FAVORITES) {
             fillFavoritesData()
         }
     }
 
     fun fillFavoritesData() {
+        Log.d("fillingmode", "filling favourites data")
         chars.postValue(Response.loading(null))
         repo.fillFavoritesData()
             .addOnSuccessListener { documentSnapshots: QuerySnapshot ->
+                Log.d("favourites", "size: " + documentSnapshots.size())
                 if (documentSnapshots.size() == 0) {
                     chars.postValue(Response.success(arrayListOf()))
                     return@addOnSuccessListener
@@ -55,6 +48,8 @@ class CharityListViewModel : ViewModel() {
                 }
                 chars.postValue(Response.success(list))
                 fillingData = false
+            }.addOnFailureListener {
+                chars.postValue(Response.success(arrayListOf()))
             }
     }
 

@@ -22,11 +22,10 @@ import com.example.donappt5.util.Util
 import com.example.donappt5.viewmodels.CharityListViewModel
 import com.example.donappt5.views.charitydescription.CharityActivity
 
-class CharityListFragment : Fragment() {
+class CharityListFragment(var fillingmode: Int) : Fragment() {
     private lateinit var binding: FragmentCharityListBinding
     val viewModel: CharityListViewModel by activityViewModels()
     private lateinit var adapter: CharityAdapter
-    var fillingmode = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,6 +33,7 @@ class CharityListFragment : Fragment() {
     ): View {
         binding = FragmentCharityListBinding.inflate(inflater, container, false)
         val view = binding.root
+        Log.d("fillingmode", (fillingmode == Util.FILLING_FAVORITES).toString())
         viewModel.fillingmode = fillingmode
         setupObserver()
         setupView()
@@ -140,6 +140,6 @@ class CharityListFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance(gfillingmode: Int) =
-            CharityListFragment().apply { fillingmode = gfillingmode }
+            CharityListFragment(gfillingmode).apply {}
     }
 }

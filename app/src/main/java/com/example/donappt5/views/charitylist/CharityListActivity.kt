@@ -47,9 +47,6 @@ class CharityListActivity : AppCompatActivity() {
 
     //private FirebaseAnalytics mFirebaseAnalytics;
     lateinit var pullToRefresh: SwipeRefreshLayout
-    var lastVisible: DocumentSnapshot? = null
-    private val prelast = 0
-    var fillingData = false
     var fillingmode = 0
     var myGlobals: MyGlobals? = null
     var queryInput: String? = null
@@ -73,6 +70,9 @@ class CharityListActivity : AppCompatActivity() {
             launchLocatorActivity()
         }
 
+        if (intent.getIntExtra("fillingmode", Util.FILLING_ALPHABET) == Util.FILLING_FAVORITES) {
+            fillingmode = Util.FILLING_FAVORITES
+        }
         setupView()
 
         charAdapter = CharityAdapter(this, chars)
