@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.AdapterView.OnItemClickListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -23,7 +24,7 @@ import com.example.donappt5.views.charitydescription.CharityActivity
 
 class CharityListFragment : Fragment() {
     private lateinit var binding: FragmentCharityListBinding
-    private lateinit var viewModel: CharityListViewModel
+    val viewModel: CharityListViewModel by activityViewModels()
     private lateinit var adapter: CharityAdapter
     var fillingmode = 0
 
@@ -33,7 +34,6 @@ class CharityListFragment : Fragment() {
     ): View {
         binding = FragmentCharityListBinding.inflate(inflater, container, false)
         val view = binding.root
-        viewModel = ViewModelProvider(this)[CharityListViewModel::class.java]
         viewModel.fillingmode = fillingmode
         setupObserver()
         setupView()
@@ -42,11 +42,11 @@ class CharityListFragment : Fragment() {
     }
 
     private fun setupObserver() {
-        viewModel.getChars().observe(viewLifecycleOwner, Observer {
+        viewModel.chars.observe(viewLifecycleOwner) {
             when (it.status) {
                 Status.SUCCESS -> {
+                    Log.d("charityvm", "obsize: ${viewModel.chars.value?.data?.size}")
                     it.data?.let { it1 -> renderList(it1) }
-                    Log.d("charityvm", "size: ${viewModel.chars.value?.data?.size}")
                 }
                 Status.LOADING -> {
                     // Handle Loading
@@ -55,7 +55,7 @@ class CharityListFragment : Fragment() {
                     // Handle Error
                 }
             }
-        })
+        }
     }
 
     fun setupView() {

@@ -8,11 +8,15 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import com.example.donappt5.R
+import com.example.donappt5.viewmodels.CharityListViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.android.synthetic.main.search_bottom_sheet.view.*
 
 
 class SearchDialogFragment(var radius: Int) : BottomSheetDialogFragment() {
+    val viewModel: CharityListViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +33,13 @@ class SearchDialogFragment(var radius: Int) : BottomSheetDialogFragment() {
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
         dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+
+        val fabSendSearch = rootLayout.fabSendSearch
+        fabSendSearch.setOnClickListener {
+            viewModel.parseSearchInfo(rootLayout.tagKids.isChecked, rootLayout.tagPoverty.isChecked,
+            rootLayout.tagHealthcare.isChecked, rootLayout.tagScience.isChecked, rootLayout.tagArt.isChecked,
+            rootLayout.tagEducation.isChecked, rootLayout.search_bar.text.toString())
+        }
         return view
     }
 }
