@@ -40,15 +40,16 @@ object FirestoreService {
         var query = db.collection("charities") as Query
         if (searchContext != null && !searchContext.isEmpty()) {
             Log.d("getCharityList", "Non null search context")
-            if (searchContext.tags["kids"] == true) query = query.whereEqualTo("kids", true)
+            if (searchContext.tags["kids"] == true) query = query.whereEqualTo("children", true)
             if (searchContext.tags["poverty"] == true) query = query.whereEqualTo("poverty", true)
             if (searchContext.tags["healthcare"] == true) query = query.whereEqualTo("healthcare", true)
-            if (searchContext.tags["science"] == true) query = query.whereEqualTo("science", true)
+            if (searchContext.tags["science"] == true) query = query.whereEqualTo("science&research", true)
             if (searchContext.tags["art"] == true) query = query.whereEqualTo("art", true)
             if (searchContext.tags["education"] == true) query = query.whereEqualTo("education", true)
             if (searchContext.name != "") { // TODO implement Algola
                 query = query.orderBy("name").startAt(searchContext.name).endAt(searchContext.name + "\uf8ff")
             }
+            Log.d(TAG, "getCharityList: context = ${searchContext.tags}")
             return query.get()
         }
         return if (lastVisible != null) {
