@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/round_rectangle_shape_gray">
+
+
+    <CheckBox
+        android:id="@+id/tagEducation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="education"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tagScience" />
+
+    <CheckBox
+        android:id="@+id/tagArt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="art"
+        app:layout_constraintBottom_toBottomOf="@+id/tagScience"
+        app:layout_constraintStart_toEndOf="@+id/tagScience" />
+
+    <CheckBox
+        android:id="@+id/tagScience"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="science &amp; research"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tagKids" />
+
+    <CheckBox
+        android:id="@+id/tagKids"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="15dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="kids"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+        android:id="@+id/tagPoverty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="poverty"
+        app:layout_constraintBottom_toBottomOf="@+id/tagKids"
+        app:layout_constraintStart_toEndOf="@+id/tagKids" />
+
+    <CheckBox
+        android:id="@+id/tagHealthcare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="healthcare"
+        app:layout_constraintBottom_toBottomOf="@+id/tagPoverty"
+        app:layout_constraintStart_toEndOf="@+id/tagPoverty" />
+
+
+    <EditText
+        android:id="@+id/search_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="105dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/round_rectangle_shape_white"
+        android:hint="Search"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tagEducation" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSendSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="25dp"
+        app:backgroundTint="@color/colorFab"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/search_bar"
+        app:srcCompat="@drawable/ic_send_search"
+        app:tint="@color/md_white_1000" />
+</androidx.constraintlayout.widget.ConstraintLayout>

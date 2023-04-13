@@ -84,7 +84,7 @@ class CharitiesMapViewModel() : ViewModel() {
                     FirestoreService.getCharityData(key)?.addOnSuccessListener {
                         if (it != null) {
                             val offsetItem =
-                                MyClusterItem(location.latitude, location.longitude, it.toCharity()?.name, "snippet")
+                                MyClusterItem(location.latitude, location.longitude, it.toCharity()?.name, "snippet", it.toCharity()?.firestoreID)
                             mClusterManager.value?.addItem(offsetItem)
                         }
                     }
@@ -101,7 +101,7 @@ class CharitiesMapViewModel() : ViewModel() {
                 if (!loadedchars!!.contains(key)) {
                     loadedchars!!.add(key)
                     val offsetItem =
-                        MyClusterItem(location.latitude, location.longitude, key, "snippet")
+                        MyClusterItem(location.latitude, location.longitude, key, "snippet", key)
                     mClusterManager.value?.addItem(offsetItem)
                 }
             }

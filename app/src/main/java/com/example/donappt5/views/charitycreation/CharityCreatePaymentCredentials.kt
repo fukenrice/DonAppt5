@@ -2,10 +2,15 @@ package com.example.donappt5.views.charitycreation
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.text.Html
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.donappt5.R
 import com.example.donappt5.databinding.FragmentCharityCreatePaymentCredentialsBinding
@@ -62,11 +67,15 @@ class CharityCreatePaymentCredentials : Fragment() {
     }
 
     private fun showInfoAlertDialog() {
-        val ad = AlertDialog.Builder(requireActivity())
-        ad.setTitle(resources.getString(R.string.qiwi_getting_url_hint_title))
-        ad.setMessage(resources.getString(R.string.qiwi_getting_url_hint))
-        ad.setPositiveButton(resources.getText(R.string.ok)) {dialog, which -> }
+        val adb = AlertDialog.Builder(requireActivity())
+        adb.setTitle(resources.getString(R.string.qiwi_getting_url_hint_title))
+        adb.setMessage(resources.getString(R.string.qiwi_getting_url_hint))
+        adb.setPositiveButton(resources.getText(R.string.ok)) {dialog, which -> }
+        val ad = adb.create()
         ad.show()
+        val msg = ad.findViewById<TextView>(android.R.id.message)
+        msg.autoLinkMask = Linkify.WEB_URLS
+        msg.movementMethod = LinkMovementMethod.getInstance()
     }
 
     fun getText() : String {

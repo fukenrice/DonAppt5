@@ -101,14 +101,14 @@
                 </androidx.viewpager.widget.ViewPager>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fab"
+                    android:id="@+id/fabOpenSearch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     android:layout_marginEnd="0dp"
                     android:layout_marginBottom="15dp"
                     app:backgroundTint="@color/colorFab"
-                    app:srcCompat="@drawable/ic_plus_white"
+                    app:srcCompat="@drawable/baseline_search_24"
                     app:tint="@color/md_white_1000"/>
             </FrameLayout>
 

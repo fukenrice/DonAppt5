@@ -182,7 +182,7 @@ class CharitiesMapActivity : AppCompatActivity(), OnMapReadyCallback {
         gmap!!.setOnMarkerClickListener(viewModel.mClusterManager.value)
 
         viewModel.mClusterManager.value!!.setOnClusterItemInfoWindowClickListener { item: MyClusterItem? ->
-            FirestoreService.getCharityData(item!!.title!!)?.addOnCompleteListener { task: Task<DocumentSnapshot?> ->
+            FirestoreService.getCharityData(item!!.id)?.addOnCompleteListener { task: Task<DocumentSnapshot?> ->
                 if (task.isSuccessful) {
                     val document = task.result ?: return@addOnCompleteListener
                     if (document.exists()) {

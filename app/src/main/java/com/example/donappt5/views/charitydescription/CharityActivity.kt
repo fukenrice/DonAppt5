@@ -114,7 +114,7 @@ class CharityActivity : AppCompatActivity() {
             btnDonate.setOnClickListener {
                 viewModel.logAnalytics()
 
-                if (viewModel.getCharity().value?.data?.paymentUrl != null) {
+                if (viewModel.getCharity().value?.data?.paymentUrl != null && viewModel.getCharity().value?.data?.paymentUrl != "") {
                     val intent1 = Intent(ctx, QiwiPaymentActivity::class.java)
                     intent1.putExtra("firestoreID", viewModel.getCharity().value?.data?.firestoreID)
                     intent1.putExtra("charityname", viewModel.getCharity().value?.data?.name)

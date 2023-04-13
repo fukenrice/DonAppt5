@@ -41,11 +41,6 @@ tools:context=".views.onboarding.OnBoardingActivity">
                 android:text="@string/confirm_changes" />
         </LinearLayout>
     </LinearLayout>
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:menu="@menu/bottom_navigation_menu" />
 
 </LinearLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

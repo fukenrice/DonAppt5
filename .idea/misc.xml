@@ -11,19 +11,25 @@
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable-anydpi/ic_search_light.xml" value="0.233" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable-anydpi/ic_user_filled.xml" value="0.233" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable-anydpi/ic_user_light.xml" value="0.233" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/circle_shape.xml" value="0.251" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/ic_search.xml" value="0.233" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/ic_sync.xml" value="0.233" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/item_selector.xml" value="0.12" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/item_selector_charities.xml" value="0.12" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/item_selector_donations.xml" value="0.12" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/item_selector_user.xml" value="0.12" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/list_item_shape.xml" value="0.251" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/rectangle.xml" value="0.251" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/round_rectangle_shape.xml" value="0.251" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/round_rectangle_shape_gray.xml" value="0.211" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/drawable/round_rectangle_shape_white.xml" value="0.211" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_browse.xml" value="0.24048913043478262" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charitiesmap.xml" value="0.24048913043478262" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charitycreation.xml" value="0.2125" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charitydesc.xml" value="0.2125" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charityedit.xml" value="0.24048913043478262" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charitygoalsedit.xml" value="0.24048913043478262" />
-        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charitylist.xml" value="0.19817767653758542" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_charitylist.xml" value="0.2" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_generateqr.xml" value="0.24048913043478262" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_locator.xml" value="0.24048913043478262" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/activity_on_boarding.xml" value="0.24048913043478262" />
@@ -51,6 +57,7 @@
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/layout_profile.xml" value="0.264" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/layout_sign_in.xml" value="0.10989583333333333" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/popup_checkboxes.xml" value="0.25" />
+        <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/layout/search_bottom_sheet.xml" value="0.4" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/menu/activity_main_drawer.xml" value="0.13333333333333333" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.24895833333333334" />
         <entry key="..\:/D/_Egor/Coding/Charities/Android/DonAppt5/app/src/main/res/menu/menu_main.xml" value="0.13333333333333333" />

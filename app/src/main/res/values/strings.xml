@@ -42,7 +42,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="qiwi_payment">Ссылка на оплату qiwi</string>
     <string name="qiwi_getting_url_hint_title">Как получить личную ссылку для перевода?</string>
-    <string name="qiwi_getting_url_hint">Необходимо зарегистророваться по адресу: https://qiwi.com/p2p-admin/transfers/link и вставить сренерированную ссылку в поле ниже</string>
+    <string name="qiwi_getting_url_hint">Необходимо зарегистророваться по адресу: <a href="https://qiwi.com/p2p-admin/transfers/link">https://qiwi.com/p2p-admin/transfers/link</a> и вставить сренерированную ссылку в поле ниже</string>
     <string name="ok">Oк</string>
     <string name="no_payment_credentials_message">Организация пока не указала реквизиты для оплаты</string>
     <string name="edit">Edit</string>
@@ -56,4 +56,5 @@
     <string name="map">map</string>
     <string name="donations">donations</string>
     <string name="profile">profile</string>
+    <string name="user_name_is_not_set">User name is not set</string>
 </resources>

@@ -5,11 +5,13 @@ import android.util.Log
 import android.widget.Toast
 import com.example.donappt5.data.model.Charity
 import com.example.donappt5.data.model.Charity.Companion.toCharity
+import com.example.donappt5.data.model.SearchContext
 import com.example.donappt5.data.model.User
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
@@ -31,22 +33,32 @@ object FirestoreService {
     }
 
     fun getCharityList(
-        currentTag: String,
-        lastVisible: DocumentSnapshot? = null
+        lastVisible: DocumentSnapshot?,
+        searchContext: SearchContext?
     ): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
-        val taggedquery = if (currentTag !== "none") {
-            db.collection("charities").whereEqualTo(currentTag, true)
-        } else {
-            db.collection("charities")
+        var query = db.collection("charities") as Query
+        if (searchContext != null && !searchContext.isEmpty()) {
+            Log.d("getCharityList", "Non null search context")
+            if (searchContext.tags["kids"] == true) query = query.whereEqualTo("children", true)
+            if (searchContext.tags["poverty"] == true) query = query.whereEqualTo("poverty", true)
+            if (searchContext.tags["healthcare"] == true) query = query.whereEqualTo("healthcare", true)
+            if (searchContext.tags["science"] == true) query = query.whereEqualTo("science&research", true)
+            if (searchContext.tags["art"] == true) query = query.whereEqualTo("art", true)
+            if (searchContext.tags["education"] == true) query = query.whereEqualTo("education", true)
+            if (searchContext.name != "") { // TODO implement Algola
+                query = query.orderBy("name").startAt(searchContext.name).endAt(searchContext.name + "\uf8ff")
+            }
+            Log.d(TAG, "getCharityList: context = ${searchContext.tags}")
+            return query.get()
         }
         return if (lastVisible != null) {
-            taggedquery
-                .startAfter(lastVisible!!)
+            query
+                .startAfter(lastVisible)
                 .limit(20)
                 .get()
         } else {
-            taggedquery
+            query
                 .limit(20)
                 .get()
         }
@@ -78,7 +90,7 @@ object FirestoreService {
 
         return if (lastVisible != null) {
             query
-                .startAfter(lastVisible!!)
+                .startAfter(lastVisible)
                 .limit(20)
                 .get()
         } else {
@@ -215,15 +227,8 @@ object FirestoreService {
         return db.collection("charities").document(id).delete()
     }
 
-    fun createCharity(id: String, fields: Map<String, Any>) {
-
-    }
-
     fun checkName(name: String, currentName: String? = null): Task<QuerySnapshot> {
         val db = FirebaseFirestore.getInstance()
         return db.collection("charities").whereEqualTo("name", name).get()
     }
-
-
-
 }

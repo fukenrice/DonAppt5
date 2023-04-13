@@ -17,8 +17,6 @@ import com.koalap.geofirestore.GeoFire
 import com.koalap.geofirestore.GeoLocation
 
 class ProgramEntryViewModel : ViewModel() {
-    var latitude = -1000.0
-    var longitude = -1000.0
     var userHasLocationsOfInterest = MutableLiveData<Boolean>()
 
     init {

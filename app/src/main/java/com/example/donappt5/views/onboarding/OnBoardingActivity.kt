@@ -40,7 +40,7 @@ class OnBoardingActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[OnBoardingViewModel::class.java]
         setupObserver()
         setContentView(view)
-        MyGlobals(baseContext).setupBottomNavigation(baseContext, this, binding.bottomNavigation)
+        // MyGlobals(baseContext).setupBottomNavigation(baseContext, this, binding.bottomNavigation)
     }
 
     fun setupObserver() {
